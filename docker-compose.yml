@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: boss-raid-db
+    environment:
+      POSTGRES_USER: bossraid
+      POSTGRES_PASSWORD: bossraid123
+      POSTGRES_DB: boss_raid
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  nickname  String
+  avatar    String?
+  xp        Int      @default(0)
+  level     Int      @default(1)
+  role      String   @default("player")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  quests       PlayerQuest[]
+  participants RaidParticipant[]
+}
+
+model Quest {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  difficulty  Int
+  xpReward    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  players PlayerQuest[]
+}
+
+model PlayerQuest {
+  id        String   @id @default(uuid())
+  completed Boolean  @default(false)
+  userId    String
+  questId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  quest Quest @relation(fields: [questId], references: [id])
+
+  @@unique([userId, questId])
+}
+
+model Boss {
+  id             String   @id @default(uuid())
+  name           String
+  hp             Int
+  damage         Int
+  xpReward       Int
+  levelRequired  Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  raids Raid[]
+}
+
+model Raid {
+  id        String   @id @default(uuid())
+  bossId    String
+  status    String   @default("open")
+  currentHp Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  boss         Boss              @relation(fields: [bossId], references: [id])
+  participants RaidParticipant[]
+}
+
+model RaidParticipant {
+  id       String   @id @default(uuid())
+  raidId   String
+  userId   String
+  damage   Int      @default(0)
+  joinedAt DateTime @default(now())
+
+  raid Raid @relation(fields: [raidId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([raidId, userId])
+}
