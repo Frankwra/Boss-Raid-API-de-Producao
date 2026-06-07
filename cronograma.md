@@ -4,8 +4,8 @@
 
 | Marco | Previsão | Status |
 |-------|----------|--------|
-| Setup do Projeto | Sprint 1 | ⏳ Pendente |
-| Autenticação & Usuários | Sprint 1 | ⏳ Pendente |
+| Setup do Projeto | Sprint 1 | ✅ Concluído |
+| Autenticação & Usuários | Sprint 1 | ✅ Concluído |
 | Gestão de Quests | Sprint 2 | ⏳ Pendente |
 | Gestão de Bosses | Sprint 2 | ⏳ Pendente |
 | Sistema de Raid | Sprint 3 | ⏳ Pendente |
@@ -16,27 +16,27 @@
 ## Sprint 1 — Fundação
 
 ### 1.1 Setup do Projeto
-- [ ] `package.json` com dependências (fastify, prisma, zod, vitest, tsx, etc.)
-- [ ] `tsconfig.json` (strict mode, sem `any`)
-- [ ] `docker-compose.yml` (PostgreSQL)
-- [ ] `.env` / `.env.example` (DATABASE_URL, JWT_SECRET, PORT)
-- [ ] `vitest.config.ts`
-- [ ] `prisma/schema.prisma` — Modelos: `User`, `Quest`, `Boss`, `Raid`, `RaidParticipant`, `PlayerQuest`
-- [ ] `npx prisma migrate dev` + seed inicial
-- [ ] Estrutura de pastas: `src/{routes,services,repositories,interfaces,plugins,schemas,lib}`
-- [ ] Fastify app bootstrap + error handler global (500)
-- [ ] Plugin de paginação
+- [x] `package.json` com dependências (fastify, prisma, zod, vitest, tsx, etc.)
+- [x] `tsconfig.json` (strict mode, sem `any`)
+- [x] `docker-compose.yml` (PostgreSQL)
+- [x] `.env` / `.env.example` (DATABASE_URL, JWT_SECRET, PORT)
+- [x] `vitest.config.ts`
+- [x] `prisma/schema.prisma` — Modelos: `User`, `Quest`, `Boss`, `Raid`, `RaidParticipant`, `PlayerQuest`
+- [ ] `npx prisma migrate dev` + seed inicial (aguardando Docker)
+- [x] Estrutura de pastas: `src/{routes,services,repositories,interfaces,plugins,schemas,lib}`
+- [x] Fastify app bootstrap + error handler global (500)
+- [x] Plugin de paginação
 
 ### 1.2 Autenticação & Usuários
-- [ ] `IUserRepository` (interface)
-- [ ] `UserService` — register, login, getProfile, updateProfile
-- [ ] `InMemoryUserRepository` (fake para testes)
-- [ ] `PrismaUserRepository`
-- [ ] Testes unitários do `UserService` (TDD - Red/Green/Refactor)
-- [ ] Schemas Zod: `register.schema.ts`, `login.schema.ts`
-- [ ] `auth.routes.ts` — POST /auth/register, POST /auth/login
-- [ ] `user.routes.ts` — GET /users/:id, PUT /users/:id (protegidas)
-- [ ] Plugin JWT — middleware de autenticação
+- [x] `IUserRepository` (interface)
+- [x] `UserService` — register, login, getProfile, updateProfile
+- [x] `InMemoryUserRepository` (fake para testes)
+- [x] `PrismaUserRepository`
+- [x] Testes unitários do `UserService` (TDD — 9 testes passando)
+- [x] Schemas Zod: `register.schema.ts`, `login.schema.ts`
+- [x] `auth.routes.ts` — POST /auth/register, POST /auth/login
+- [x] `user.routes.ts` — GET /users/:id, PUT /users/:id (protegidas)
+- [x] Plugin JWT — middleware de autenticação
 
 ---
 
@@ -82,8 +82,8 @@
 ### 3.3 Polimento
 - [ ] Seed do banco com dados iniciais (prisma/seed.ts)
 - [ ] README.md com instruções de setup e endpoints
-- [ ] Git: branches `feat/`, commits conventional em português
-- [ ] Rebase interativo para histórico linear
+- [x] Git: branches `feat/`, commits conventional em português
+- [x] Rebase interativo para histórico linear
 
 ---
 
@@ -175,10 +175,10 @@ model RaidParticipant {
 
 | Método | Rota | Status Code | Descrição |
 |--------|------|-------------|-----------|
-| POST | `/auth/register` | 201 | Criar conta |
-| POST | `/auth/login` | 200 | Login (retorna JWT) |
-| GET | `/users/:id` | 200 | Perfil do usuário |
-| PUT | `/users/:id` | 200 | Atualizar perfil |
+| POST | `/auth/register` | 201 | Criar conta | ✅ |
+| POST | `/auth/login` | 200 | Login (retorna JWT) | ✅ |
+| GET | `/users/:id` | 200 | Perfil do usuário | ✅ |
+| PUT | `/users/:id` | 200 | Atualizar perfil | ✅ |
 | GET | `/quests` | 200 | Listar quests (paginado) |
 | POST | `/quests` | 201 | Criar quest (admin) |
 | GET | `/quests/:id` | 200 | Detalhe da quest |
