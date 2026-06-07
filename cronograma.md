@@ -22,7 +22,7 @@
 - [x] `.env` / `.env.example` (DATABASE_URL, JWT_SECRET, PORT)
 - [x] `vitest.config.ts`
 - [x] `prisma/schema.prisma` — Modelos: `User`, `Quest`, `Boss`, `Raid`, `RaidParticipant`, `PlayerQuest`
-- [ ] `npx prisma migrate dev` + seed inicial (aguardando Docker)
+- [x] `npx prisma migrate dev` + seed inicial
 - [x] Estrutura de pastas: `src/{routes,services,repositories,interfaces,plugins,schemas,lib}`
 - [x] Fastify app bootstrap + error handler global (500)
 - [x] Plugin de paginação
