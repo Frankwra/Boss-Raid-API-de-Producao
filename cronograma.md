@@ -81,7 +81,7 @@
 
 ### 3.3 Polimento
 - [x] Seed do banco com dados iniciais (prisma/seed.ts)
-- [ ] README.md com instruções de setup e endpoints
+- [x] README.md com instruções de setup e endpoints
 - [x] Git: branches `feat/`, commits conventional em português
 - [x] Rebase interativo para histórico linear
 
