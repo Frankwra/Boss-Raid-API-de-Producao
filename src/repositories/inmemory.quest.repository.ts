@@ -64,4 +64,8 @@ export class InMemoryQuestRepository implements IQuestRepository {
     this.playerQuests[index] = { ...this.playerQuests[index], completed }
     return this.playerQuests[index]!
   }
+
+  async findCompletedQuestIds(userId: string): Promise<string[]> {
+    return this.playerQuests.filter(pq => pq.userId === userId && pq.completed).map(pq => pq.questId)
+  }
 }

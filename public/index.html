@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boss Raid — Teste de API</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: { 850: '#1a1f2e' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a96e;
+      --gold-light: #dfc084;
+      --gold-glow: rgba(201, 169, 110, 0.25);
+      --crimson: #b84545;
+      --crimson-light: #d45a5a;
+      --emerald: #3a9d5c;
+      --emerald-light: #4dbd73;
+      --indigo: #6b6be8;
+      --bg: #0a0a10;
+      --bg-surface: #121016;
+      --bg-card: rgba(20, 17, 26, 0.88);
+      --bg-elevated: rgba(26, 22, 34, 0.92);
+      --border: rgba(201, 169, 110, 0.12);
+      --border-hover: rgba(201, 169, 110, 0.3);
+      --text: #edeae3;
+      --text-muted: #8a7f73;
+      --text-dim: #5c5449;
+      --font-heading: 'Cinzel', serif;
+      --font-body: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+      --radius: 10px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .light {
+      --gold: #9a7d4a;
+      --gold-light: #b8985e;
+      --gold-glow: rgba(154,125,74,0.2);
+      --bg: #f3efe7;
+      --bg-surface: #e8e2d6;
+      --bg-card: rgba(255,252,245,0.92);
+      --bg-elevated: rgba(255,255,255,0.95);
+      --border: rgba(154,125,74,0.15);
+      --border-hover: rgba(154,125,74,0.3);
+      --text: #1a1612;
+      --text-muted: #6b6156;
+      --text-dim: #9a9084;
+    }
+
+    * { scrollbar-color: var(--border-hover) var(--bg-surface); scrollbar-width: thin; }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--text);
+      position: relative;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 256px 256px;
+    }
+
+    /* Font overrides for Cinzel on headings */
+    h1, h2, h3, h4, .font-bold, .form-label, .sidebar-item, .tab-btn, .badge, .btn, nav span:not(#user-email-display), .text-\[10px\] {
+      font-family: var(--font-heading);
+    }
+    .form-label { letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.65rem; }
+
+    html.light body {
+      background: var(--bg);
+      background-image: radial-gradient(ellipse at 50% 0%, rgba(154,125,74,0.06) 0%, transparent 70%);
+    }
+    html.light body::before { opacity: 0.02; }
+
+    /* Input overrides */
+    input, textarea, select { color-scheme: dark; font-family: var(--font-body); }
+    html.light input, html.light textarea, html.light select { color-scheme: light; }
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    textarea:-webkit-autofill:hover,
+    textarea:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--text);
+      -webkit-box-shadow: 0 0 0 30px var(--bg-surface) inset;
+      caret-color: var(--text);
+      background-color: transparent;
+    }
+    html.light input:-webkit-autofill,
+    html.light input:-webkit-autofill:hover,
+    html.light input:-webkit-autofill:focus,
+    html.light textarea:-webkit-autofill,
+    html.light textarea:-webkit-autofill:hover,
+    html.light textarea:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 30px #fff inset;
+    }
+    input::selection, textarea::selection { background-color: var(--gold); color: var(--bg); }
+
+    /* Layout */
+    body { background: var(--bg); background-image: radial-gradient(ellipse at 50% 0%, rgba(201,169,110,0.06) 0%, transparent 70%); min-height: 100vh; }
+
+    /* ─── SIDEBAR ─────────────────────────────────────────────────── */
+    .sidebar-item {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; border-radius: var(--radius);
+      cursor: pointer; transition: all 0.15s; font-size: 0.8rem; letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+    .sidebar-item:hover { color: var(--gold-light); background: var(--gold-glow); }
+    .sidebar-item.active {
+      color: var(--gold-light); background: var(--gold-glow);
+      border-left: 2px solid var(--gold); box-shadow: inset 0 1px 0 rgba(201,169,110,0.08);
+    }
+    .sidebar-item.disabled { opacity: 0.35; cursor: not-allowed; }
+    .sidebar-item.disabled:hover { color: var(--text-muted); background: transparent; }
+
+    /* ─── FORM ────────────────────────────────────────────────────── */
+    .form-input {
+      width: 100%; border-radius: var(--radius); padding: 0.6rem 0.8rem; font-size: 0.875rem;
+      transition: all 0.15s;
+      background: var(--bg-surface); border: 1px solid var(--border); color: var(--text);
+      font-family: var(--font-body);
+    }
+    .form-input::placeholder { color: var(--text-dim); }
+    .form-input:focus {
+      outline: none; border-color: var(--gold); background: var(--bg-elevated);
+      box-shadow: 0 0 0 3px var(--gold-glow);
+    }
+    html.light .form-input { background: #fff; border-color: rgba(154,125,74,0.2); }
+    html.light .form-input:focus { background: #fff; }
+
+    .form-label { display: block; color: var(--text-muted); margin-bottom: 0.35rem; }
+
+    /* ─── BUTTONS ─────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.6rem 1rem; border-radius: var(--radius); font-size: 0.8rem; letter-spacing: 0.04em;
+      transition: all 0.15s; font-weight: 600;
+    }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #0a0a10; box-shadow: 0 2px 12px var(--gold-glow);
+    }
+    .btn-primary:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 4px 20px var(--gold-glow); }
+    html.light .btn-primary { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .btn-danger {
+      background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
+      color: #fff; box-shadow: 0 2px 12px rgba(184,69,69,0.25);
+    }
+    .btn-danger:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-success {
+      background: linear-gradient(135deg, var(--emerald), var(--emerald-light));
+      color: #fff; box-shadow: 0 2px 12px rgba(58,157,92,0.25);
+    }
+    .btn-success:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-ghost { color: var(--text-muted); }
+    .btn-ghost:hover:not(:disabled) { color: var(--text); background: var(--gold-glow); }
+    .btn-xs { font-size: 0.7rem; padding: 0.4rem 0.7rem; border-radius: 6px; letter-spacing: 0.03em; }
+
+    /* ─── CARD ────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      box-shadow: var(--shadow); border-radius: var(--radius); padding: 1rem; backdrop-filter: blur(6px);
+      transition: all 0.2s;
+    }
+    .card:hover { border-color: var(--border-hover); box-shadow: var(--shadow), 0 0 20px var(--gold-glow); }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .resource-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      box-shadow: var(--shadow); border-radius: var(--radius); padding: 1rem; backdrop-filter: blur(6px);
+      transition: all 0.2s; display: flex; flex-direction: column;
+      animation: cardIn 0.35s ease-out backwards;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .resource-card:nth-child(1) { animation-delay: 0s; }
+    .resource-card:nth-child(2) { animation-delay: 0.04s; }
+    .resource-card:nth-child(3) { animation-delay: 0.08s; }
+    .resource-card:nth-child(4) { animation-delay: 0.12s; }
+    .resource-card:nth-child(5) { animation-delay: 0.16s; }
+    .resource-card:nth-child(6) { animation-delay: 0.2s; }
+    .resource-card:nth-child(7) { animation-delay: 0.24s; }
+    .resource-card:nth-child(8) { animation-delay: 0.28s; }
+    .resource-card:nth-child(9) { animation-delay: 0.32s; }
+    .resource-card:nth-child(10) { animation-delay: 0.36s; }
+    .resource-card:hover {
+      border-color: var(--border-hover); box-shadow: var(--shadow), 0 0 24px var(--gold-glow);
+      transform: translateY(-3px);
+    }
+    .resource-card .card-actions {
+      display: flex; gap: 0.25rem; margin-top: 0.75rem; padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ─── LOG / BADGE / TAB ───────────────────────────────────────── */
+    .log-entry { padding: 0.5rem 0.75rem; border-radius: var(--radius); font-size: 0.7rem; font-family: 'Courier New', monospace; border-left: 3px solid; margin-bottom: 0.35rem; transition: all 0.15s; }
+    html.light .log-entry { border-left-color: var(--text-dim); }
+
+    .badge {
+      display: inline-flex; align-items: center; padding: 0.15rem 0.6rem; border-radius: 999px;
+      font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+
+    /* ─── ANIMATIONS ──────────────────────────────────────────────── */
+    .fade-in { animation: fadeIn 0.25s ease-out both; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .slide-up { animation: slideUp 0.25s ease-out both; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    .content-area { max-height: calc(100vh - 13rem); overflow-y: auto; }
+    .content-area::-webkit-scrollbar { width: 4px; }
+    .content-area::-webkit-scrollbar-track { background: transparent; }
+    .content-area::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
+
+    .log-area { max-height: 16rem; overflow-y: auto; }
+    .log-area::-webkit-scrollbar { width: 4px; }
+    .log-area::-webkit-scrollbar-track { background: transparent; }
+    .log-area::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
+
+    /* ─── TABS ────────────────────────────────────────────────────── */
+    .tab-btn {
+      padding: 0.6rem 1.25rem; font-size: 0.8rem; letter-spacing: 0.05em;
+      transition: all 0.15s; color: var(--text-muted); border-radius: 8px 8px 0 0;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .tab-btn.active {
+      color: var(--gold-light); background: var(--bg-card);
+      border-bottom: 2px solid var(--gold);
+    }
+
+    /* ─── TOAST ───────────────────────────────────────────────────── */
+    .toast {
+      animation: toastIn 0.3s ease-out;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid var(--border); backdrop-filter: blur(10px);
+      border-radius: var(--radius); padding: 0.75rem 1rem;
+      font-family: var(--font-body);
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    .skeleton { background: var(--bg-surface); border-radius: var(--radius); animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.8; } }
+
+    /* ─── STAT BOX ────────────────────────────────────────────────── */
+    .stat-box {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem; text-align: center; transition: all 0.15s;
+    }
+    .stat-box:hover { border-color: var(--border-hover); }
+
+    input[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
+
+    /* ─── MODAL ───────────────────────────────────────────────────── */
+    .modal-overlay {
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+      animation: overlayIn 0.15s ease-out;
+    }
+    @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-overlay .card {
+      animation: modalIn 0.2s ease-out;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-content { max-height: 85vh; overflow-y: auto; }
+
+    /* ─── LIGHT MODE OVERRIDES ────────────────────────────────────── */
+    html.light nav { background: rgba(255,252,245,0.9) !important; border-color: rgba(154,125,74,0.15) !important; }
+    html.light .sidebar-item:hover { background: rgba(154,125,74,0.08); color: var(--gold); }
+    html.light .sidebar-item.active { background: rgba(154,125,74,0.12); color: var(--gold); }
+    html.light .btn-ghost:hover { background: rgba(154,125,74,0.08); }
+    html.light .tab-btn:hover { background: rgba(0,0,0,0.03); }
+    html.light .tab-btn.active { background: var(--bg-card); }
+    html.light #log-panel { background: var(--bg-elevated) !important; border-color: var(--border) !important; }
+    html.light #log-panel button { color: var(--text-muted); }
+    html.light #log-panel button:hover { color: var(--text); }
+    html.light #log-body { background: transparent; }
+    html.light .toast { border-color: var(--border); }
+    html.light aside { background: var(--bg-elevated) !important; border-color: var(--border) !important; }
+    html.light .resource-card { background: var(--bg-card); border-color: var(--border); }
+    html.light .resource-card:hover { border-color: var(--border-hover); }
+    html.light .stat-box { background: var(--bg-surface); border-color: var(--border); }
+    html.light .badge { opacity: 0.85; }
+
+    /* ─── TAILWIND UTILITY OVERRIDES ─────────────────────────────── */
+    .text-slate-400, .text-slate-500, .text-slate-600 { color: var(--text-muted) !important; }
+    .text-slate-300 { color: var(--text) !important; }
+    .text-indigo-400, .text-indigo-500 { color: var(--gold-light) !important; }
+    .text-indigo-500 { color: var(--gold-light) !important; }
+    .text-indigo-400 i, .text-indigo-500 i { color: inherit; }
+    .bg-indigo-600\/20 { background: var(--gold-glow) !important; }
+    .border-slate-700\/50, .border-slate-700, .border-slate-800 { border-color: var(--border) !important; }
+    .hover\:text-white:hover { color: var(--text) !important; }
+    .hover\:bg-slate-700\/50:hover { background: var(--gold-glow) !important; }
+    .bg-slate-700 { background: var(--bg-surface) !important; }
+    .bg-slate-700\/30 { background: var(--gold-glow) !important; }
+    .bg-slate-800\/80 { background: var(--bg-card) !important; }
+    .bg-slate-900 { background: var(--bg) !important; }
+    .text-slate-300#user-email-display { color: var(--text) !important; }
+  </style>
+</head>
+<body class="min-h-screen antialiased" style="background:var(--bg);color:var(--text)">
+
+<div id="app" class="flex flex-col h-screen">
+  <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden"></div>
+
+  <nav class="backdrop-blur-md border-b px-4 lg:px-6 py-3 flex items-center justify-between shrink-0 relative z-20" style="background:var(--bg-elevated);border-color:var(--border)">
+    <div class="flex items-center gap-3">
+      <button id="btn-menu" class="md:hidden btn-ghost btn-xs -ml-1" title="Menu">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+      <i class="fa-solid fa-dragon" style="color:var(--gold);font-size:1.25rem"></i>
+      <span class="hidden sm:inline" style="font-family:var(--font-heading);font-weight:700;font-size:1.125rem">Boss Raid</span>
+      <span class="text-xs hidden sm:inline" style="color:var(--text-dim)">Teste de API</span>
+    </div>
+    <div id="user-info" class="flex items-center gap-3">
+      <button id="btn-theme" class="btn-ghost btn-xs" title="Alternar tema">
+        <i class="fa-solid fa-moon" id="theme-icon"></i>
+      </button>
+      <button id="btn-base-url" class="btn-ghost btn-xs" title="Configurar URL base">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+      <div id="user-greeting" class="hidden items-center gap-2">
+        <span class="badge bg-indigo-600/20 text-indigo-400" id="user-role-badge"></span>
+        <span class="text-sm text-slate-300" id="user-email-display"></span>
+        <button id="btn-copy-token" class="btn-ghost btn-xs" title="Copiar token JWT">
+          <i class="fa-solid fa-copy"></i>
+        </button>
+        <button id="btn-logout" class="btn-ghost btn-xs text-red-400 hover:text-red-300">
+          <i class="fa-solid fa-right-from-bracket"></i> Sair
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="flex flex-1 overflow-hidden">
+    <aside id="sidebar" class="w-56 border-r p-3 flex flex-col gap-1 shrink-0 overflow-y-auto fixed md:static inset-y-0 left-0 z-30 -translate-x-full md:translate-x-0 transition-transform duration-200 md:flex" style="background:var(--bg-elevated);border-color:var(--border)">
+      <div class="flex md:hidden items-center justify-between mb-2 px-3 pt-2">
+        <span class="text-xs font-bold px-3 pt-2" style="color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase">Menu</span>
+        <button id="btn-menu-close" class="btn-ghost btn-xs"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="text-xs px-3 pt-3 pb-1.5" style="color:var(--text-dim);font-family:var(--font-heading);letter-spacing:0.1em;text-transform:uppercase;font-weight:700">Autenticação</div>
+      <div class="sidebar-item active" data-context="auth"><i class="fa-solid fa-key w-5 text-center"></i> Login / Register</div>
+
+      <div id="recursos-section" class="hidden">
+        <div class="text-xs px-3 pt-4 pb-1.5" style="color:var(--text-dim);font-family:var(--font-heading);letter-spacing:0.1em;text-transform:uppercase;font-weight:700">Recursos</div>
+        <div class="sidebar-item" data-context="profile"><i class="fa-solid fa-user w-5 text-center"></i> Perfil</div>
+        <div class="sidebar-item" data-context="quests"><i class="fa-solid fa-scroll w-5 text-center"></i> Quests</div>
+        <div class="sidebar-item" data-context="bosses"><i class="fa-solid fa-skull w-5 text-center"></i> Bosses</div>
+        <div class="sidebar-item" data-context="raids"><i class="fa-solid fa-crosshairs w-5 text-center"></i> Raids</div>
+        <div class="sidebar-item" data-context="tests"><i class="fa-solid fa-vial w-5 text-center"></i> Testes</div>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden">
+      <div id="content" class="flex-1 p-4 lg:p-6 content-area"></div>
+      <div id="log-panel" class="border-t shrink-0" style="background:var(--bg-elevated);border-color:var(--border)">
+        <button id="log-toggle" class="w-full px-4 py-2 flex items-center justify-between text-xs transition-colors" style="color:var(--text-muted)">
+          <span><i class="fa-solid fa-terminal mr-2"></i> Log de Requisições</span>
+          <span class="flex items-center gap-2">
+            <span id="log-count" class="badge" style="background:var(--bg-surface);color:var(--text-muted)">0</span>
+            <button id="log-export" class="btn-ghost btn-xs text-sky-400" title="Exportar log"><i class="fa-solid fa-download"></i></button>
+            <button id="log-clear" class="btn-ghost btn-xs text-red-400" title="Limpar log"><i class="fa-solid fa-trash-can"></i></button>
+            <i class="fa-solid fa-chevron-up text-xs transition-transform" id="log-chevron"></i>
+          </span>
+        </button>
+        <div id="log-body" class="log-area px-4 pb-3 space-y-1 hidden">
+          <div class="text-center text-xs text-slate-600 py-8">Nenhuma requisição ainda.<br>Interaja com a API para ver o log aqui.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast" class="toast fixed top-4 right-4 z-50 max-w-sm hidden" style="background:var(--bg-elevated);color:var(--text)"></div>
+
+  <div id="modal-base-url" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-overlay">
+    <div class="card w-96 mx-4">
+      <h3 class="font-semibold mb-4"><i class="fa-solid fa-gear mr-2"></i> URL Base da API</h3>
+      <label class="form-label">URL Base</label>
+      <input type="text" id="input-base-url" class="form-input mb-4" placeholder="http://localhost:3000">
+      <div class="flex justify-end gap-2">
+        <button id="btn-base-url-cancel" class="btn-ghost">Cancelar</button>
+        <button id="btn-base-url-save" class="btn-primary">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-form" class="modal-overlay fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="card w-full max-w-lg mx-4 modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold" id="modal-form-title"></h3>
+        <button id="btn-modal-close" class="btn-ghost btn-xs"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modal-form-body"></div>
+      <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-700/50">
+        <button id="btn-modal-cancel" class="btn-ghost">Cancelar</button>
+        <button id="btn-modal-submit" class="btn-primary">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+"use strict";
+
+// ─── CONFIG ───────────────────────────────────────────────────────────────
+const LS_TOKEN = "bossraid_token"
+const LS_USER = "bossraid_user"
+const LS_BASE = "bossraid_base_url"
+const BASE_URL = localStorage.getItem(LS_BASE) || "http://localhost:3001"
+
+function saveBaseUrl(url) { localStorage.setItem(LS_BASE, url) }
+
+// ─── API FETCH ────────────────────────────────────────────────────────────
+async function apiFetch(method, path, body) {
+  const token = localStorage.getItem(LS_TOKEN)
+  const headers = {}
+  if (token) headers["Authorization"] = `Bearer ${token}`
+
+  const options = { method, headers }
+  if (body !== undefined && body !== null) {
+    headers["Content-Type"] = "application/json"
+    options.body = JSON.stringify(body)
+  }
+
+  const start = performance.now()
+  let res, data
+  try {
+    res = await fetch(`${BASE_URL}${path}`, options)
+    data = await res.json().catch(() => null)
+  } catch (err) {
+    logEntry({ method, path, status: 0, body: err.message, error: true })
+    throw err
+  }
+  const duration = ((performance.now() - start) / 1000).toFixed(2)
+
+  logEntry({ method, path, status: res.status, body: data, duration })
+  return { status: res.status, data }
+}
+
+// ─── LOG ──────────────────────────────────────────────────────────────────
+const logEntries = []
+function logEntry(entry) {
+  logEntries.unshift(entry)
+  if (logEntries.length > 200) logEntries.pop()
+  renderLog()
+}
+
+function renderLog() {
+  const el = document.getElementById("log-body")
+  const count = document.getElementById("log-count")
+  count.textContent = logEntries.length
+
+  if (logEntries.length === 0) {
+    el.innerHTML = '<div class="text-center text-xs text-slate-600 py-8">Nenhuma requisição ainda.<br>Interaja com a API para ver o log aqui.</div>'
+    return
+  }
+
+  el.innerHTML = logEntries.map(e => {
+    let color, label
+    if (e.error || e.status === 0) { color = "border-red-500 bg-red-900/20 text-red-300"; label = "ERRO" }
+    else if (e.status >= 200 && e.status < 300) { color = "border-emerald-500 bg-emerald-900/20 text-emerald-300"; label = "OK" }
+    else if (e.status >= 400 && e.status < 500) { color = "border-yellow-500 bg-yellow-900/20 text-yellow-300"; label = e.status }
+    else { color = "border-red-500 bg-red-900/20 text-red-300"; label = e.status }
+
+    let bodyStr = ""
+    try { bodyStr = typeof e.body === "string" ? e.body : JSON.stringify(e.body, null, 2) } catch { bodyStr = String(e.body) }
+    const preview = bodyStr.length > 500 ? bodyStr.slice(0, 500) + "…" : bodyStr
+
+    return `<div class="log-entry ${color} fade-in">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="font-bold text-white">${e.method}</span>
+        <span class="text-slate-400">${e.path}</span>
+        <span class="ml-auto flex items-center gap-2">
+          <span class="badge ${e.status >= 200 && e.status < 300 ? 'bg-emerald-600/20 text-emerald-300' : e.status >= 400 ? 'bg-red-600/20 text-red-300' : 'bg-slate-600/20 text-slate-300'}">${label}</span>
+          ${e.duration ? `<span class="text-slate-500">${e.duration}s</span>` : ''}
+        </span>
+      </div>
+      ${preview ? `<pre class="text-xs text-slate-400 mt-1 whitespace-pre-wrap overflow-x-auto max-h-24">${escapeHtml(preview)}</pre>` : ''}
+    </div>`
+  }).join("")
+}
+
+function escapeHtml(str) {
+  if (typeof str !== "string") return str
+  const d = document.createElement("div")
+  d.textContent = str
+  return d.innerHTML
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────
+let toastTimer = null
+function showToast(message, type) {
+  const el = document.getElementById("toast")
+  if (!el) return
+  const colors = { error: "bg-red-600", success: "bg-emerald-600", info: "bg-indigo-600" }
+  const icons = { error: "fa-circle-exclamation", success: "fa-check-circle", info: "fa-circle-info" }
+  el.className = `fixed top-4 right-4 z-50 max-w-sm ${colors[type] || "bg-slate-700"} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 text-sm`
+  el.innerHTML = `<i class="fa-solid ${icons[type] || "fa-circle-info"}"></i><span>${escapeHtml(message)}</span>`
+  el.classList.remove("hidden")
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => { el.classList.add("hidden") }, 5000)
+}
+
+function showError(msg) { showToast(msg, "error") }
+function showSuccess(msg) { showToast(msg, "success") }
+function showInfo(msg) { showToast(msg, "info") }
+
+// ─── APP STORE ────────────────────────────────────────────────────────────
+class AppStore {
+  constructor() {
+    this._state = {
+      token: localStorage.getItem(LS_TOKEN),
+      user: JSON.parse(localStorage.getItem(LS_USER) || "null"),
+      context: "auth",
+    }
+    this._listeners = []
+  }
+
+  get state() { return this._state }
+
+  setState(partial) {
+    Object.assign(this._state, partial)
+    this._listeners.forEach(fn => fn(this._state))
+    this._sync()
+  }
+
+  subscribe(fn) { this._listeners.push(fn); fn(this._state); return () => { this._listeners = this._listeners.filter(f => f !== fn) } }
+
+  _sync() {
+    if (this._state.token) localStorage.setItem(LS_TOKEN, this._state.token)
+    else localStorage.removeItem(LS_TOKEN)
+    if (this._state.user) localStorage.setItem(LS_USER, JSON.stringify(this._state.user))
+    else localStorage.removeItem(LS_USER)
+  }
+}
+
+const store = new AppStore()
+
+// ─── MODAL ────────────────────────────────────────────────────────────────
+let modalSubmitHandler = null
+
+function showFormModal(title, bodyHtml, onSubmit, confirmBtnText = "Salvar") {
+  modalSubmitHandler = onSubmit || null
+  document.getElementById("modal-form-title").textContent = title
+  document.getElementById("modal-form-body").innerHTML = bodyHtml
+  document.getElementById("btn-modal-submit").textContent = confirmBtnText
+  document.getElementById("btn-modal-submit").classList.toggle("hidden", !onSubmit)
+  document.getElementById("modal-form").classList.remove("hidden")
+}
+
+function showConfirmModal(message, onConfirm) {
+  showFormModal("Confirmar", `<p class="text-slate-300">${escapeHtml(message)}</p>`, () => {
+    hideFormModal()
+    if (onConfirm) onConfirm()
+  }, "Confirmar")
+}
+
+function hideFormModal() {
+  document.getElementById("modal-form").classList.add("hidden")
+  modalSubmitHandler = null
+}
+
+document.getElementById("btn-modal-close").addEventListener("click", hideFormModal)
+document.getElementById("btn-modal-cancel").addEventListener("click", hideFormModal)
+document.getElementById("btn-modal-submit").addEventListener("click", () => {
+  if (modalSubmitHandler) modalSubmitHandler()
+})
+document.getElementById("modal-form").addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) hideFormModal()
+})
+
+// ─── RENDERERS ────────────────────────────────────────────────────────────
+function render(ctx) {
+  const items = document.querySelectorAll(".sidebar-item")
+  items.forEach(el => {
+    el.classList.toggle("active", el.dataset.context === ctx)
+  })
+
+  const content = document.getElementById("content")
+
+  const formatters = {
+    auth: renderAuth,
+    profile: renderProfile,
+    quests: renderQuests,
+    bosses: renderBosses,
+    raids: renderRaids,
+    tests: renderTests,
+  }
+
+  content.innerHTML = ""
+  const fn = formatters[ctx]
+  if (fn) fn(content)
+  else content.innerHTML = `<div class="text-slate-500 text-center py-12">Contexto não encontrado</div>`
+}
+
+function loadCompletedQuests() {
+  try { return new Set(JSON.parse(localStorage.getItem("bossraid_completed_quests") || "[]")) } catch { return new Set() }
+}
+function saveCompletedQuests() { localStorage.setItem("bossraid_completed_quests", JSON.stringify([...completedQuests])) }
+let completedQuests = loadCompletedQuests()
+async function fetchCompletedQuests() {
+  try {
+    const uid = store.state.user?.id
+    if (!uid) return
+    const r = await apiFetch("GET", `/quests/completed?userId=${uid}`)
+    if (Array.isArray(r.data?.data)) {
+      completedQuests = new Set(r.data.data)
+      saveCompletedQuests()
+    }
+  } catch {}
+}
+
+store.subscribe(state => {
+  const greeting = document.getElementById("user-greeting")
+  const recursos = document.getElementById("recursos-section")
+  if (state.token && state.user) {
+    greeting.classList.remove("hidden")
+    document.getElementById("user-email-display").textContent = state.user.email
+    document.getElementById("user-role-badge").textContent = state.user.role || "player"
+    recursos.classList.remove("hidden")
+    if (completedQuests.size === 0) fetchCompletedQuests()
+  } else {
+    greeting.classList.add("hidden")
+    recursos.classList.add("hidden")
+  }
+})
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────
+function renderAuth(container) {
+  container.innerHTML = `
+    <div class="max-w-md mx-auto space-y-6">
+      <div class="flex border-b border-slate-700">
+        <button class="tab-btn active" data-tab="login">Login</button>
+        <button class="tab-btn" data-tab="register">Cadastro</button>
+      </div>
+      <div id="auth-form" class="card">
+        <form id="form-login">
+          <h3 class="font-semibold mb-4">Entrar</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" name="email" placeholder="admin@bossraid.com" required>
+            </div>
+            <div>
+              <label class="form-label">Senha</label>
+              <input type="password" class="form-input" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-primary w-full">Entrar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `
+
+  container.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      container.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"))
+      btn.classList.add("active")
+      const form = container.querySelector("#auth-form form")
+      if (btn.dataset.tab === "login") {
+        form.innerHTML = `
+          <h3 class="font-semibold mb-4">Entrar</h3>
+          <div class="space-y-3">
+            <div><label class="form-label">Email</label><input type="email" class="form-input" name="email" placeholder="admin@bossraid.com" required></div>
+            <div><label class="form-label">Senha</label><input type="password" class="form-input" name="password" placeholder="••••••••" required></div>
+            <button type="submit" class="btn-primary w-full">Entrar</button>
+          </div>
+        `
+      } else {
+        form.innerHTML = `
+          <h3 class="font-semibold mb-4">Criar Conta</h3>
+          <div class="space-y-3">
+            <div><label class="form-label">Email</label><input type="email" class="form-input" name="email" placeholder="email@exemplo.com" required></div>
+            <div><label class="form-label">Nickname</label><input type="text" class="form-input" name="nickname" placeholder="Seu apelido" required></div>
+            <div><label class="form-label">Senha</label><input type="password" class="form-input" name="password" placeholder="••••••••" required></div>
+            <button type="submit" class="btn-primary w-full">Cadastrar</button>
+          </div>
+        `
+      }
+    })
+  })
+
+  container.addEventListener("submit", async (e) => {
+    e.preventDefault()
+    const form = e.target
+    const isLogin = form.id === "form-login" || form.textContent.includes("Entrar")
+    const btn = form.querySelector('button[type="submit"]')
+    const originalText = isLogin ? "Entrar" : "Cadastrar"
+    if (btn) { btn.disabled = true; btn.textContent = "Aguarde..." }
+
+    try {
+      const data = Object.fromEntries(new FormData(form))
+      const body = isLogin
+        ? { email: data.email, password: data.password }
+        : { email: data.email, nickname: data.nickname, password: data.password }
+
+      const { status, data: res } = await apiFetch("POST", isLogin ? "/auth/login" : "/auth/register", body)
+      if (status >= 200 && status < 300 && res?.token) {
+        showSuccess(isLogin ? "Login realizado!" : "Conta criada! Redirecionando...")
+        store.setState({ token: res.token })
+        if (res.user) store.setState({ user: res.user })
+        await fetchCompletedQuests()
+        await new Promise(r => setTimeout(r, 300))
+        render("quests")
+      } else {
+        const details = res?.details
+        const msg = details ? details.map(d => `${d.campo}: ${d.mensagem}`).join("; ") : (res?.message || res?.error || `Erro ${status}`)
+        showError(msg)
+      }
+    } catch (err) {
+      showError(`Erro de conexão: ${err?.message || "falha na requisição"}`)
+    } finally {
+      const btn2 = form.querySelector('button[type="submit"]')
+      if (btn2) { btn2.disabled = false; btn2.textContent = originalText }
+    }
+  })
+}
+
+// ─── PROFILE ──────────────────────────────────────────────────────────────
+function renderProfile(container) {
+  container.innerHTML = `
+    <div class="max-w-lg mx-auto space-y-6">
+      <h2 class="text-xl font-bold"><i class="fa-solid fa-user mr-2 text-indigo-400"></i>Perfil</h2>
+      <div id="profile-display" class="card">
+        <div class="text-center text-slate-500 py-4">
+          <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+          <p class="text-sm">Carregando perfil...</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold mb-3">Atualizar Perfil</h3>
+        <form id="form-update-profile">
+          <div class="space-y-3">
+            <div>
+              <label class="form-label">Nickname</label>
+              <input type="text" class="form-input" name="nickname" placeholder="Novo nickname">
+            </div>
+            <div>
+              <label class="form-label">Avatar URL</label>
+              <input type="text" class="form-input" name="avatar" placeholder="https://exemplo.com/avatar.png">
+            </div>
+            <button type="submit" class="btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `
+
+  loadProfile()
+
+  document.getElementById("form-update-profile").addEventListener("submit", async (e) => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.target))
+    const user = store.state.user
+    if (!user) return
+    const body = {}
+    if (data.nickname) body.nickname = data.nickname
+    if (data.avatar) body.avatar = data.avatar
+    const { status, data: res } = await apiFetch("PUT", `/users/${user.id}`, body)
+    if (status >= 200 && status < 300 && res?.id) {
+      store.setState({ user: res })
+      loadProfile()
+    } else {
+      const details = res?.details
+      showError(details ? details.map(d => `${d.campo}: ${d.mensagem}`).join("; ") : (res?.message || `Erro ${status}`))
+    }
+  })
+}
+
+async function loadProfile() {
+  const user = store.state.user
+  if (!user) return
+  const { status, data: res } = await apiFetch("GET", `/users/${user.id}`)
+  const el = document.getElementById("profile-display")
+  if (!el) return
+  if (status >= 200 && status < 300 && res?.id) {
+    const u = res
+    el.innerHTML = `
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-indigo-600/30 flex items-center justify-center text-xl font-bold text-indigo-400">${(u.nickname || u.email)[0].toUpperCase()}</div>
+        <div>
+          <p class="font-semibold">${u.nickname || "Sem nickname"}</p>
+          <p class="text-sm text-slate-400">${u.email}</p>
+          <div class="flex gap-2 mt-1">
+            <span class="badge bg-indigo-600/20 text-indigo-400">Nv ${u.level || 1}</span>
+            <span class="badge bg-yellow-600/20 text-yellow-400">${u.xp || 0} XP</span>
+            <span class="badge bg-slate-600/20 text-slate-300">${u.role || "player"}</span>
+          </div>
+        </div>
+      </div>
+    `
+  } else {
+    el.innerHTML = `<div class="text-center text-red-400 py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Erro ao carregar perfil</div>`
+  }
+}
+
+// ─── QUESTS ───────────────────────────────────────────────────────────────
+let questsPage = 1, questsTotalPages = 1, questsData = []
+
+function renderQuests(container) {
+  questsPage = 1
+  container.innerHTML = `
+    <div class="space-y-6">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <h2 class="text-xl font-bold"><i class="fa-solid fa-scroll mr-2 text-indigo-400"></i>Quests</h2>
+        <div class="flex items-center gap-2">
+          <input type="text" id="quest-search" class="form-input text-sm py-1.5 w-48" placeholder="Buscar quest..." />
+          <button id="btn-show-create-quest" class="btn-success btn-xs shrink-0"><i class="fa-solid fa-plus"></i> Nova</button>
+        </div>
+      </div>
+      <div id="quest-list" class="card-grid"></div>
+      <div id="quest-pagination" class="hidden">
+        <div class="flex items-center justify-center gap-3 text-sm">
+          <button id="quest-prev" class="btn-ghost btn-xs"><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+          <span id="quest-page-info" class="text-slate-400">Página 1 de 1</span>
+          <button id="quest-next" class="btn-ghost btn-xs">Próximo <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  `
+
+  document.getElementById("btn-show-create-quest").addEventListener("click", () => {
+    showFormModal("Nova Quest", `
+      <form id="modal-form-inner" class="space-y-3">
+        <div><label class="form-label">Título</label><input type="text" class="form-input" name="title" required></div>
+        <div><label class="form-label">Descrição</label><textarea class="form-input" name="description" rows="3"></textarea></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="form-label">Dificuldade (1-5)</label><input type="number" class="form-input" name="difficulty" min="1" max="5" value="1"></div>
+          <div><label class="form-label">XP de Recompensa</label><input type="number" class="form-input" name="xpReward" min="0" value="100"></div>
+        </div>
+      </form>
+    `, async () => {
+      const data = Object.fromEntries(new FormData(document.getElementById("modal-form-inner")))
+      data.difficulty = Number(data.difficulty)
+      data.xpReward = Number(data.xpReward)
+      if (!data.description || data.description.length < 10) {
+        showError("Descrição deve ter no mínimo 10 caracteres"); return
+      }
+      const { status, data: res } = await apiFetch("POST", "/quests", data)
+      if (status >= 200 && status < 300) {
+        showSuccess("Quest criada com sucesso!"); hideFormModal(); listQuests()
+      } else {
+        const details = res?.details
+        showError(details ? details.map(d => `${d.campo}: ${d.mensagem}`).join("; ") : (res?.message || `Erro ${status}`))
+      }
+    })
+  })
+
+  document.getElementById("quest-prev").addEventListener("click", () => {
+    if (questsPage > 1) listQuests(--questsPage)
+  })
+  document.getElementById("quest-next").addEventListener("click", () => {
+    if (questsPage < questsTotalPages) listQuests(++questsPage)
+  })
+
+  document.getElementById("quest-search").addEventListener("input", () => {
+    filterQuestCards()
+  })
+
+  listQuests(1)
+}
+
+function filterQuestCards() {
+  const q = (document.getElementById("quest-search").value || "").toLowerCase()
+  const filtered = q ? questsData.filter(item => item.title.toLowerCase().includes(q)) : questsData
+  renderQuestCards(filtered)
+}
+
+function renderQuestCards(items) {
+  const el = document.getElementById("quest-list")
+  if (items.length === 0) {
+    el.innerHTML = '<div class="col-span-full text-center text-slate-600 py-8 text-sm">Nenhuma quest encontrada.</div>'
+    return
+  }
+  el.innerHTML = items.map(q => {
+    const done = q.completed || completedQuests.has(q.id)
+    return `
+    <div class="resource-card fade-in flex flex-col">
+      <div class="flex-1">
+        <p class="font-semibold truncate">${escapeHtml(q.title)}</p>
+        <p class="text-xs text-slate-400 mt-1 line-clamp-2">${escapeHtml((q.description || "").slice(0, 80))}${(q.description || "").length > 80 ? "..." : ""}</p>
+        <div class="flex flex-wrap gap-1.5 mt-2">
+          <span class="badge bg-indigo-600/20 text-indigo-400"><i class="fa-solid fa-star mr-0.5"></i>${q.difficulty || "?"}</span>
+          <span class="badge bg-yellow-600/20 text-yellow-400"><i class="fa-solid fa-bolt mr-0.5"></i>${q.xpReward} XP</span>
+          <span class="badge ${done ? 'bg-emerald-600/20 text-emerald-400' : 'bg-slate-600/20 text-slate-300'}">${done ? '✓ Completa' : 'Pendente'}</span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-ghost btn-xs quest-view flex-1" data-id="${q.id}"><i class="fa-solid fa-eye mr-1"></i>Ver</button>
+        ${done ? '' : `<button class="btn-ghost btn-xs quest-edit flex-1" data-id="${q.id}"><i class="fa-solid fa-pen mr-1"></i>Editar</button>`}
+        <button class="btn-ghost btn-xs text-red-400 quest-delete flex-1" data-id="${q.id}"><i class="fa-solid fa-trash-can mr-1"></i>Excluir</button>
+      </div>
+    </div>`
+  }).join("")
+  attachQuestEvents()
+}
+
+async function listQuests(page) {
+  questsPage = page
+  const el = document.getElementById("quest-list")
+  el.innerHTML = '<div class="col-span-full text-center text-slate-500 py-8"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div>'
+  const { status, data: res } = await apiFetch(`GET`, `/quests?page=${page}&limit=20`)
+  if (status >= 200 && status < 300 && res?.data) {
+    questsData = res.data
+    questsTotalPages = res.meta?.totalPages || 1
+    const pagEl = document.getElementById("quest-pagination")
+    pagEl.classList.toggle("hidden", questsTotalPages <= 1)
+    document.getElementById("quest-page-info").textContent = `Página ${page} de ${questsTotalPages}`
+    document.getElementById("quest-prev").disabled = page <= 1
+    document.getElementById("quest-next").disabled = page >= questsTotalPages
+    filterQuestCards()
+  } else {
+    el.innerHTML = '<div class="col-span-full text-center text-red-400 py-8">Erro ao carregar quests</div>'
+  }
+}
+
+function attachQuestEvents() {
+  document.querySelectorAll(".quest-view").forEach(btn => btn.addEventListener("click", () => viewQuest(btn.dataset.id)))
+  document.querySelectorAll(".quest-edit").forEach(btn => btn.addEventListener("click", () => editQuest(btn.dataset.id)))
+  document.querySelectorAll(".quest-delete").forEach(btn => btn.addEventListener("click", async () => {
+    const id = btn.dataset.id
+    showConfirmModal("Deletar esta quest?", async () => {
+      const { status } = await apiFetch("DELETE", `/quests/${id}`)
+      if (status >= 200 && status < 300) listQuests(questsPage)
+    })
+  }))
+}
+
+async function viewQuest(id) {
+  const { status, data: res } = await apiFetch("GET", `/quests/${id}`)
+  if (status < 200 || status >= 300) return
+  const q = res.quest || res
+  const done = q.completed || completedQuests.has(q.id)
+  showFormModal(escapeHtml(q.title), `
+    <p class="text-sm text-slate-300 mb-3">${escapeHtml(q.description || "Sem descrição")}</p>
+    <div class="flex flex-wrap gap-2 mb-3">
+      <span class="badge bg-indigo-600/20 text-indigo-400">Dificuldade ${q.difficulty}</span>
+      <span class="badge bg-yellow-600/20 text-yellow-400">${q.xpReward} XP</span>
+      <span class="badge ${done ? 'bg-emerald-600/20 text-emerald-400' : 'bg-slate-600/20 text-slate-300'}">${done ? '✓ Completa' : 'Pendente'}</span>
+    </div>
+  `, done ? null : async () => {
+    const userId = document.getElementById("complete-user-id").value
+    if (!userId) return showError("Informe o ID do usuário")
+    const r = await apiFetch("POST", `/quests/${id}/complete`, { userId })
+    if (r.status >= 200 && r.status < 300) {
+      showSuccess(`Quest completada! +${r.data?.xpGanho || "?"} XP`);
+      hideFormModal();
+      completedQuests.add(id); saveCompletedQuests();
+      const idx = questsData.findIndex(q => q.id === id)
+      if (idx >= 0) questsData[idx] = { ...questsData[idx], completed: true }
+      filterQuestCards();
+      loadProfile()
+    } else if (r.status === 409) {
+      showSuccess("Quest já estava completa!");
+      hideFormModal();
+      completedQuests.add(id); saveCompletedQuests();
+      const idx = questsData.findIndex(q => q.id === id)
+      if (idx >= 0) questsData[idx] = { ...questsData[idx], completed: true }
+      filterQuestCards()
+    } else {
+      showError(r.data?.message || `Erro ${r.status}`)
+    }
+  })
+}
+
+async function editQuest(id) {
+  const { status, data: res } = await apiFetch("GET", `/quests/${id}`)
+  if (status < 200 || status >= 300) return
+  const q = res.quest || res
+  const done = q.completed || completedQuests.has(q.id)
+  if (done) {
+    showError("Quest já concluída não pode ser editada")
+    return
+  }
+  showFormModal(`Editar Quest #${id}`, `
+    <form id="modal-form-inner" class="space-y-3">
+      <div><label class="form-label">Título</label><input type="text" class="form-input" name="title" value="${escapeHtml(q.title)}" required></div>
+      <div><label class="form-label">Descrição</label><textarea class="form-input" name="description" rows="3">${escapeHtml(q.description || "")}</textarea></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Dificuldade (1-5)</label><input type="number" class="form-input" name="difficulty" min="1" max="5" value="${q.difficulty}"></div>
+        <div><label class="form-label">XP de Recompensa</label><input type="number" class="form-input" name="xpReward" min="0" value="${q.xpReward}"></div>
+      </div>
+    </form>
+  `, async () => {
+    const data = Object.fromEntries(new FormData(document.getElementById("modal-form-inner")))
+    data.difficulty = Number(data.difficulty)
+    data.xpReward = Number(data.xpReward)
+    const r = await apiFetch("PUT", `/quests/${id}`, data)
+    if (r.status >= 200 && r.status < 300) {
+      showSuccess("Quest atualizada!"); hideFormModal(); render("quests")
+    } else {
+      const details = r.data?.details
+      showError(details ? details.map(d => `${d.campo}: ${d.mensagem}`).join("; ") : (r.data?.message || `Erro ${r.status}`))
+    }
+  })
+}
+
+// ─── BOSSES ───────────────────────────────────────────────────────────────
+let bossesPage = 1, bossesTotalPages = 1, bossesData = []
+
+function renderBosses(container) {
+  bossesPage = 1
+  container.innerHTML = `
+    <div class="space-y-6">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <h2 class="text-xl font-bold"><i class="fa-solid fa-skull mr-2 text-indigo-400"></i>Bosses</h2>
+        <div class="flex items-center gap-2">
+          <input type="text" id="boss-search" class="form-input text-sm py-1.5 w-48" placeholder="Buscar boss..." />
+          <button id="btn-show-create-boss" class="btn-success btn-xs shrink-0"><i class="fa-solid fa-plus"></i> Novo</button>
+        </div>
+      </div>
+      <div id="boss-list" class="card-grid"></div>
+      <div id="boss-pagination" class="hidden">
+        <div class="flex items-center justify-center gap-3 text-sm">
+          <button id="boss-prev" class="btn-ghost btn-xs"><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+          <span id="boss-page-info" class="text-slate-400">Página 1 de 1</span>
+          <button id="boss-next" class="btn-ghost btn-xs">Próximo <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  `
+
+  document.getElementById("btn-show-create-boss").addEventListener("click", () => {
+    showFormModal("Novo Boss", `
+      <form id="modal-form-inner" class="space-y-3">
+        <div><label class="form-label">Nome</label><input type="text" class="form-input" name="name" required></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="form-label">Nível Necessário</label><input type="number" class="form-input" name="levelRequired" min="1" value="1"></div>
+          <div><label class="form-label">XP de Recompensa</label><input type="number" class="form-input" name="xpReward" min="0" value="200"></div>
+          <div><label class="form-label">HP</label><input type="number" class="form-input" name="hp" min="1" value="100"></div>
+          <div><label class="form-label">Dano</label><input type="number" class="form-input" name="damage" min="0" value="10"></div>
+        </div>
+      </form>
+    `, async () => {
+      const data = Object.fromEntries(new FormData(document.getElementById("modal-form-inner")))
+      data.hp = Number(data.hp); data.damage = Number(data.damage); data.xpReward = Number(data.xpReward); data.levelRequired = Number(data.levelRequired)
+      const { status, data: res } = await apiFetch("POST", "/bosses", data)
+      if (status >= 200 && status < 300) {
+        showSuccess("Boss criado com sucesso!"); hideFormModal(); listBosses(1)
+      } else {
+        const details = res?.details
+        showError(details ? details.map(d => `${d.campo}: ${d.mensagem}`).join("; ") : (res?.message || `Erro ${status}`))
+      }
+    })
+  })
+
+  document.getElementById("boss-prev").addEventListener("click", () => {
+    if (bossesPage > 1) listBosses(--bossesPage)
+  })
+  document.getElementById("boss-next").addEventListener("click", () => {
+    if (bossesPage < bossesTotalPages) listBosses(++bossesPage)
+  })
+
+  document.getElementById("boss-search").addEventListener("input", () => {
+    filterBossCards()
+  })
+
+  listBosses(1)
+}
+
+function filterBossCards() {
+  const q = (document.getElementById("boss-search").value || "").toLowerCase()
+  const filtered = q ? bossesData.filter(item => item.name.toLowerCase().includes(q)) : bossesData
+  renderBossCards(filtered)
+}
+
+function renderBossCards(items) {
+  const el = document.getElementById("boss-list")
+  if (items.length === 0) {
+    el.innerHTML = '<div class="col-span-full text-center text-slate-600 py-8 text-sm">Nenhum boss encontrado.</div>'
+    return
+  }
+  el.innerHTML = items.map(b => `
+    <div class="resource-card fade-in flex flex-col">
+      <div class="flex-1">
+        <p class="font-semibold truncate">${escapeHtml(b.name)}</p>
+        <div class="flex flex-wrap gap-1.5 mt-2">
+          <span class="badge bg-red-600/20 text-red-400"><i class="fa-solid fa-heart mr-0.5"></i>${b.hp} HP</span>
+          <span class="badge bg-orange-600/20 text-orange-400"><i class="fa-solid fa-crosshairs mr-0.5"></i>${b.damage} DMG</span>
+          <span class="badge bg-yellow-600/20 text-yellow-400"><i class="fa-solid fa-bolt mr-0.5"></i>${b.xpReward} XP</span>
+          <span class="badge bg-indigo-600/20 text-indigo-400"><i class="fa-solid fa-level-up mr-0.5"></i>Nv ${b.levelRequired}</span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-ghost btn-xs boss-view flex-1" data-id="${b.id}"><i class="fa-solid fa-eye mr-1"></i>Ver</button>
+        <button class="btn-ghost btn-xs boss-edit flex-1" data-id="${b.id}"><i class="fa-solid fa-pen mr-1"></i>Editar</button>
+        <button class="btn-ghost btn-xs text-red-400 boss-delete flex-1" data-id="${b.id}"><i class="fa-solid fa-trash-can mr-1"></i>Excluir</button>
+      </div>
+    </div>
+  `).join("")
+  attachBossEvents()
+}
+
+async function listBosses(page) {
+  bossesPage = page
+  const el = document.getElementById("boss-list")
+  el.innerHTML = '<div class="col-span-full text-center text-slate-500 py-8"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div>'
+  const { status, data: res } = await apiFetch("GET", `/bosses?page=${page}&limit=20`)
+  if (status >= 200 && status < 300 && res?.data) {
+    bossesData = res.data
+    bossesTotalPages = res.meta?.totalPages || 1
+    const pagEl = document.getElementById("boss-pagination")
+    pagEl.classList.toggle("hidden", bossesTotalPages <= 1)
+    document.getElementById("boss-page-info").textContent = `Página ${page} de ${bossesTotalPages}`
+    document.getElementById("boss-prev").disabled = page <= 1
+    document.getElementById("boss-next").disabled = page >= bossesTotalPages
+    filterBossCards()
+  } else {
+    el.innerHTML = '<div class="col-span-full text-center text-red-400 py-8">Erro ao carregar bosses</div>'
+  }
+}
+
+function attachBossEvents() {
+  document.querySelectorAll(".boss-view").forEach(btn => btn.addEventListener("click", () => viewBoss(btn.dataset.id)))
+  document.querySelectorAll(".boss-edit").forEach(btn => btn.addEventListener("click", () => editBoss(btn.dataset.id)))
+  document.querySelectorAll(".boss-delete").forEach(btn => btn.addEventListener("click", async () => {
+    const id = btn.dataset.id
+    showConfirmModal("Deletar este boss?", async () => {
+      const { status } = await apiFetch("DELETE", `/bosses/${id}`)
+      if (status >= 200 && status < 300) listBosses(bossesPage)
+    })
+  }))
+}
+
+async function viewBoss(id) {
+  const { status, data: res } = await apiFetch("GET", `/bosses/${id}`)
+  if (status < 200 || status >= 300) return
+  const b = res.boss || res
+  showFormModal(escapeHtml(b.name), `
+    <div class="grid grid-cols-2 gap-3 mb-2">
+      <div class="stat-box"><span class="text-red-400 text-lg font-bold"><i class="fa-solid fa-heart mr-1"></i>${b.hp}</span><p class="text-xs text-slate-400 mt-1">HP</p></div>
+      <div class="stat-box"><span class="text-orange-400 text-lg font-bold"><i class="fa-solid fa-crosshairs mr-1"></i>${b.damage}</span><p class="text-xs text-slate-400 mt-1">Dano</p></div>
+      <div class="stat-box"><span class="text-yellow-400 text-lg font-bold"><i class="fa-solid fa-bolt mr-1"></i>${b.xpReward}</span><p class="text-xs text-slate-400 mt-1">XP</p></div>
+      <div class="stat-box"><span class="text-indigo-400 text-lg font-bold"><i class="fa-solid fa-level-up mr-1"></i>${b.levelRequired}</span><p class="text-xs text-slate-400 mt-1">Nível Necessário</p></div>
+    </div>
+  `)
+}
+
+async function editBoss(id) {
+  const { status, data: res } = await apiFetch("GET", `/bosses/${id}`)
+  if (status < 200 || status >= 300) return
+  const b = res.boss || res
+  showFormModal(`Editar Boss #${id}`, `
+    <form id="modal-form-inner" class="space-y-3">
+      <div><label class="form-label">Nome</label><input type="text" class="form-input" name="name" value="${escapeHtml(b.name)}" required></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Nível Necessário</label><input type="number" class="form-input" name="levelRequired" min="1" value="${b.levelRequired}"></div>
+        <div><label class="form-label">XP de Recompensa</label><input type="number" class="form-input" name="xpReward" min="0" value="${b.xpReward}"></div>
+        <div><label class="form-label">HP</label><input type="number" class="form-input" name="hp" min="1" value="${b.hp}"></div>
+        <div><label class="form-label">Dano</label><input type="number" class="form-input" name="damage" min="0" value="${b.damage}"></div>
+      </div>
+    </form>
+  `, async () => {
+    const data = Object.fromEntries(new FormData(document.getElementById("modal-form-inner")))
+    data.hp = Number(data.hp); data.damage = Number(data.damage); data.xpReward = Number(data.xpReward); data.levelRequired = Number(data.levelRequired)
+    const r = await apiFetch("PUT", `/bosses/${id}`, data)
+    if (r.status >= 200 && r.status < 300) {
+      showSuccess("Boss atualizado!"); hideFormModal(); render("bosses")
+    } else {
+      const details = r.data?.details
+      showError(details ? details.map(d => `${d.campo}: ${d.mensagem}`).join("; ") : (r.data?.message || `Erro ${r.status}`))
+    }
+  })
+}
+
+// ─── RAIDS ────────────────────────────────────────────────────────────────
+let raidsPage = 1, raidsTotalPages = 1
+
+function renderRaids(container) {
+  raidsPage = 1
+  container.innerHTML = `
+    <div class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold"><i class="fa-solid fa-crosshairs mr-2 text-indigo-400"></i>Raids</h2>
+        <button id="btn-show-create-raid" class="btn-success btn-xs"><i class="fa-solid fa-plus"></i> Nova Raid</button>
+      </div>
+      <div id="raid-controls" class="hidden card">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Raid Ativa #<span id="raid-id-display"></span></h3>
+          <button class="btn-ghost btn-xs" id="btn-close-raid"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="raid-status" class="mb-3">
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="stat-box"><span class="text-red-400 text-lg font-bold" id="raid-boss-hp">0</span><p class="text-xs text-slate-400 mt-1">HP do Boss</p></div>
+            <div class="stat-box"><span class="text-emerald-400 text-lg font-bold" id="raid-player-count">0</span><p class="text-xs text-slate-400 mt-1">Participantes</p></div>
+          </div>
+          <div class="space-y-1 mb-3" id="raid-players-list"></div>
+          <div class="flex gap-2 flex-wrap">
+            <button id="btn-raid-join" class="btn-primary btn-xs"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
+            <button id="btn-raid-attack" class="btn-danger btn-xs"><i class="fa-solid fa-bolt"></i> Atacar</button>
+            <button id="btn-raid-refresh" class="btn-ghost btn-xs"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+          </div>
+        </div>
+      </div>
+      <div id="raid-list" class="card-grid"></div>
+      <div id="raid-pagination" class="hidden">
+        <div class="flex items-center justify-center gap-3 text-sm">
+          <button id="raid-prev" class="btn-ghost btn-xs"><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+          <span id="raid-page-info" class="text-slate-400">Página 1 de 1</span>
+          <button id="raid-next" class="btn-ghost btn-xs">Próximo <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  `
+
+  document.getElementById("btn-show-create-raid").addEventListener("click", async () => {
+    const { status, data: res } = await apiFetch("GET", "/bosses?page=1&limit=50")
+    const bosses = (status >= 200 && res?.data) ? res.data : []
+    if (bosses.length === 0) {
+      showError("Nenhum boss disponível para criar raid")
+      return
+    }
+    showFormModal("Nova Raid", `
+      <form id="modal-form-inner" class="space-y-3">
+        <div>
+          <label class="form-label">Selecione o Boss</label>
+          <select class="form-input" name="bossId" required>
+            <option value="">-- Selecione --</option>
+            ${bosses.map(b => `<option value="${b.id}">${escapeHtml(b.name)} (Nv ${b.levelRequired} · ❤️${b.hp} · ⚔️${b.damage})</option>`).join("")}
+          </select>
+        </div>
+      </form>
+    `, async () => {
+      const data = Object.fromEntries(new FormData(document.getElementById("modal-form-inner")))
+      if (!data.bossId) return showError("Selecione um boss")
+      const r = await apiFetch("POST", "/raids", data)
+      if (r.status >= 200 && r.status < 300) {
+        showSuccess("Raid criada!"); hideFormModal(); showRaid(r.data?.raid || r.data); listRaids(1)
+      } else {
+        showError(r.data?.message || `Erro ${r.status}`)
+      }
+    })
+  })
+
+  document.getElementById("btn-close-raid").addEventListener("click", () => {
+    document.getElementById("raid-controls").classList.add("hidden")
+  })
+  document.getElementById("btn-raid-join").addEventListener("click", async () => {
+    const raidId = document.getElementById("raid-id-display").textContent
+    const userId = store.state.user?.id
+    if (!userId) return showError("Faça login primeiro")
+    const { status, data: res } = await apiFetch("POST", `/raids/${raidId}/join`, { userId })
+    if (status >= 200 && status < 300) { refreshRaid(raidId); showSuccess("Entrou na raid!") }
+    else { showError(res?.message || `Erro ${status}`) }
+  })
+  document.getElementById("btn-raid-attack").addEventListener("click", async () => {
+    const raidId = document.getElementById("raid-id-display").textContent
+    const userId = store.state.user?.id
+    if (!userId) return showError("Faça login primeiro")
+    const { status, data: res } = await apiFetch("POST", `/raids/${raidId}/attack`, { userId })
+    if (status >= 200 && status < 300) {
+      if (res?.derrotado) {
+        showSuccess(`Boss derrotado! +${res.xpGanho || "?"} XP`);
+        loadProfile()
+      } else showSuccess(`Ataque realizado! -${res.dano || "?"} HP no boss`)
+      refreshRaid(raidId)
+    } else { showError(res?.message || `Erro ${status}`) }
+  })
+  document.getElementById("btn-raid-refresh").addEventListener("click", () => {
+    const raidId = document.getElementById("raid-id-display").textContent
+    refreshRaid(raidId)
+  })
+
+  document.getElementById("raid-prev").addEventListener("click", () => {
+    if (raidsPage > 1) listRaids(--raidsPage)
+  })
+  document.getElementById("raid-next").addEventListener("click", () => {
+    if (raidsPage < raidsTotalPages) listRaids(++raidsPage)
+  })
+
+  listRaids(1)
+}
+
+async function listRaids(page) {
+  raidsPage = page
+  const el = document.getElementById("raid-list")
+  el.innerHTML = '<div class="col-span-full text-center text-slate-500 py-8"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</div>'
+  const { status, data: res } = await apiFetch("GET", `/raids?page=${page}&limit=20`)
+  if (status >= 200 && status < 300 && res?.data) {
+    raidsTotalPages = res.meta?.totalPages || 1
+    const pagEl = document.getElementById("raid-pagination")
+    pagEl.classList.toggle("hidden", raidsTotalPages <= 1)
+    document.getElementById("raid-page-info").textContent = `Página ${page} de ${raidsTotalPages}`
+    document.getElementById("raid-prev").disabled = page <= 1
+    document.getElementById("raid-next").disabled = page >= raidsTotalPages
+    if (res.data.length === 0) {
+      el.innerHTML = '<div class="col-span-full text-center text-slate-600 py-8 text-sm">Nenhuma raid encontrada.</div>'
+      return
+    }
+    el.innerHTML = res.data.map(r => `
+      <div class="resource-card fade-in flex flex-col">
+        <div class="flex-1">
+          <p class="font-semibold">Raid #${r.id}</p>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <span class="badge bg-red-600/20 text-red-400"><i class="fa-solid fa-heart mr-0.5"></i>${r.currentHp ?? "?"} HP</span>
+            <span class="badge bg-emerald-600/20 text-emerald-400"><i class="fa-solid fa-users mr-0.5"></i>${(r.participants || []).length} jogadores</span>
+            <span class="badge ${r.status === "completed" || r.derrotado ? 'bg-red-600/20 text-red-400' : 'bg-sky-600/20 text-sky-400'}">${r.status === "completed" || r.derrotado ? 'Derrotado' : r.status === "in_progress" ? 'Em Andamento' : 'Aberta'}</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">${r.boss ? escapeHtml(r.boss.name) : `Boss ID: ${r.bossId}`}</p>
+        </div>
+        <div class="card-actions">
+          <button class="btn-ghost btn-xs raid-view flex-1" data-id="${r.id}"><i class="fa-solid fa-eye mr-1"></i>Ver</button>
+        </div>
+      </div>
+    `).join("")
+    attachRaidEvents()
+  } else {
+    el.innerHTML = '<div class="col-span-full text-center text-red-400 py-8">Erro ao carregar raids</div>'
+  }
+}
+
+function attachRaidEvents() {
+  document.querySelectorAll(".raid-view").forEach(btn => btn.addEventListener("click", () => {
+    const raidId = btn.dataset.id
+    showRaidFromApi(raidId)
+  }))
+}
+
+async function showRaidFromApi(raidId) {
+  const { status, data: res } = await apiFetch("GET", `/raids/${raidId}`)
+  if (status >= 200 && status < 300) {
+    showRaid(res?.raid || res)
+  }
+}
+
+async function showRaid(raid) {
+  const ctrl = document.getElementById("raid-controls")
+  ctrl.classList.remove("hidden")
+  document.getElementById("raid-id-display").textContent = raid.id
+  document.getElementById("raid-boss-hp").textContent = raid.currentHp ?? "?"
+  const participants = raid.participants || []
+  const userId = store.state.user?.id
+  const isParticipant = participants.some(p => p.userId === userId || p.user?.id === userId)
+  const isFinished = raid.status === "completed" || raid.derrotado
+  document.getElementById("raid-player-count").textContent = participants.length
+
+  const btnJoin = document.getElementById("btn-raid-join")
+  const btnAttack = document.getElementById("btn-raid-attack")
+  btnJoin.disabled = isParticipant || isFinished
+  btnJoin.textContent = isFinished ? "Finalizada" : isParticipant ? "Você já está na raid" : "Entrar"
+  btnAttack.disabled = !isParticipant || isFinished
+  btnAttack.textContent = isFinished ? "Finalizada" : "Atacar"
+
+  const list = document.getElementById("raid-players-list")
+  if (participants.length === 0) {
+    list.innerHTML = '<div class="text-xs text-slate-500">Nenhum participante ainda.</div>'
+  } else {
+    list.innerHTML = participants.map(p => `
+      <div class="flex items-center justify-between text-xs bg-slate-700/30 rounded px-2 py-1">
+        <span>${escapeHtml(p.user?.nickname || p.nickname || `User #${p.userId}`)} ${p.userId === userId ? '(você)' : ''}</span>
+        <span class="text-slate-400"><i class="fa-solid fa-heart text-red-400 mr-1"></i>${p.hp ?? "?"}</span>
+      </div>
+    `).join("")
+  }
+}
+
+async function refreshRaid(raidId) {
+  const { status, data: res } = await apiFetch("GET", `/raids/${raidId}`)
+  if (status >= 200 && status < 300) {
+    showRaid(res?.raid || res)
+  }
+}
+
+// ─── TESTES ────────────────────────────────────────────────────────────────
+const TESTS = [
+  { name: "Registrar usuário de teste", fn: async () => {
+    const r = await apiFetch("POST", "/auth/register", { email: `teste${Date.now()}@test.com`, nickname: "Testador", password: "teste123" })
+    if (r.data?.token) window._testUser = { email: r.data.user.email, password: "teste123" }
+    return { pass: !!r.data?.token, msg: r.data?.token ? "Token recebido" : (r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Login com usuário de teste", fn: async () => {
+    const creds = window._testUser || { email: "admin@bossraid.com", password: "admin123" }
+    const r = await apiFetch("POST", "/auth/login", { email: creds.email, password: creds.password })
+    if (r.data?.token) store.setState({ token: r.data.token, user: r.data.user })
+    return { pass: !!r.data?.token, msg: r.data?.token ? `Token: ${r.data.token.slice(0, 20)}...` : (r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Buscar perfil do usuário", fn: async () => {
+    const uid = store.state.user?.id
+    if (!uid) return { pass: false, msg: "Usuário não logado" }
+    const r = await apiFetch("GET", `/users/${uid}`)
+    return { pass: !!r.data?.id, msg: r.data?.email ? `${r.data.nickname || "sem nick"} (${r.data.email})` : (r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Atualizar perfil", fn: async () => {
+    const uid = store.state.user?.id
+    if (!uid) return { pass: false, msg: "Usuário não logado" }
+    const r = await apiFetch("PUT", `/users/${uid}`, { nickname: "Testador_" + Date.now().toString(36) })
+    return { pass: !!r.data?.id, msg: r.data?.nickname || (r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Criar quest", fn: async () => {
+    const r = await apiFetch("POST", "/quests", { title: "Quest de Teste", description: "Descrição com pelo menos 10 caracteres", difficulty: 2, xpReward: 100 })
+    window._testQuestId = r.data?.id
+    return { pass: !!r.data?.id, msg: r.data?.id ? `ID: ${r.data.id}` : (r.data?.details?.[0]?.mensagem || r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Listar quests", fn: async () => {
+    const r = await apiFetch("GET", "/quests?page=1&limit=5")
+    return { pass: Array.isArray(r.data?.data), msg: `${(r.data?.data || []).length} quests encontradas`, data: r.data }
+  }},
+  { name: "Buscar quest por ID", fn: async () => {
+    const id = window._testQuestId
+    if (!id) return { pass: false, msg: "Nenhuma quest criada no teste anterior" }
+    const r = await apiFetch("GET", `/quests/${id}`)
+    return { pass: !!r.data?.id, msg: r.data?.title || (r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Atualizar quest", fn: async () => {
+    const id = window._testQuestId
+    if (!id) return { pass: false, msg: "Nenhuma quest criada" }
+    const r = await apiFetch("PUT", `/quests/${id}`, { title: "Quest Atualizada Teste" })
+    return { pass: !!r.data?.id, msg: r.data?.title || (r.data?.details?.[0]?.mensagem || r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Completar quest", fn: async () => {
+    const id = window._testQuestId; const uid = store.state.user?.id
+    if (!id || !uid) return { pass: false, msg: "Quest ou usuário inexistente" }
+    const r = await apiFetch("POST", `/quests/${id}/complete`, { userId: uid })
+    return { pass: r.status < 300, msg: r.data?.message || (r.data?.message || `Erro ${r.status}`), data: r.data }
+  }},
+  { name: "Criar boss", fn: async () => {
+    const r = await apiFetch("POST", "/bosses", { name: "Boss de Teste", hp: 100, damage: 15, xpReward: 200, levelRequired: 1 })
+    window._testBossId = r.data?.id
+    return { pass: !!r.data?.id, msg: r.data?.id ? `ID: ${r.data.id}` : (r.data?.details?.[0]?.mensagem || r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Listar bosses", fn: async () => {
+    const r = await apiFetch("GET", "/bosses?page=1&limit=5")
+    return { pass: Array.isArray(r.data?.data), msg: `${(r.data?.data || []).length} bosses encontrados`, data: r.data }
+  }},
+  { name: "Buscar boss por ID", fn: async () => {
+    const id = window._testBossId
+    if (!id) return { pass: false, msg: "Nenhum boss criado" }
+    const r = await apiFetch("GET", `/bosses/${id}`)
+    return { pass: !!r.data?.id, msg: r.data?.name || (r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Atualizar boss", fn: async () => {
+    const id = window._testBossId
+    if (!id) return { pass: false, msg: "Nenhum boss criado" }
+    const r = await apiFetch("PUT", `/bosses/${id}`, { name: "Boss Atualizado Teste" })
+    return { pass: !!r.data?.id, msg: r.data?.name || (r.data?.details?.[0]?.mensagem || r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Criar raid", fn: async () => {
+    const bid = window._testBossId || (await (await fetch(`${BASE_URL}/bosses?page=1&limit=1`)).json()).data?.[0]?.id
+    if (!bid) return { pass: false, msg: "Nenhum boss disponível" }
+    const r = await apiFetch("POST", "/raids", { bossId: bid })
+    window._testRaidId = r.data?.id
+    return { pass: !!r.data?.id, msg: r.data?.id ? `Raid #${r.data.id} criada` : (r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Ver status da raid", fn: async () => {
+    const id = window._testRaidId
+    if (!id) return { pass: false, msg: "Nenhuma raid criada" }
+    const r = await apiFetch("GET", `/raids/${id}`)
+    return { pass: !!r.data?.id, msg: `HP: ${r.data?.currentHp ?? "?"} · ${(r.data?.participants || []).length} participantes`, data: r.data }
+  }},
+  { name: "Atacar boss na raid", fn: async () => {
+    const id = window._testRaidId; const uid = store.state.user?.id
+    if (!id || !uid) return { pass: false, msg: "Raid ou usuário inexistente" }
+    const r = await apiFetch("POST", `/raids/${id}/attack`, { userId: uid })
+    return { pass: r.status < 300, msg: r.data?.derrotado ? `Derrotado! XP: ${r.data.xpGanho}` : `Dano: ${r.data?.dano || "?"} · HP restante: ${r.data?.hpRestante || "?"}`, data: r.data }
+  }},
+  { name: "Deletar quest de teste", fn: async () => {
+    const id = window._testQuestId
+    if (!id) return { pass: false, msg: "Nenhuma quest para deletar" }
+    const r = await apiFetch("DELETE", `/quests/${id}`)
+    return { pass: r.status < 300, msg: r.status === 204 ? "Deletada (204)" : (r.data?.message || r.status), data: r.data }
+  }},
+  { name: "Deletar boss de teste", fn: async () => {
+    const id = window._testBossId
+    if (!id) return { pass: false, msg: "Nenhum boss para deletar" }
+    const r = await apiFetch("DELETE", `/bosses/${id}`)
+    return { pass: r.status < 300, msg: r.status === 204 ? "Deletado (204)" : (r.data?.message || r.status), data: r.data }
+  }},
+]
+
+function renderTests(container) {
+  container.innerHTML = `
+    <div class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold"><i class="fa-solid fa-vial mr-2 text-indigo-400"></i>Testes da API</h2>
+        <button id="btn-run-tests" class="btn-primary btn-xs"><i class="fa-solid fa-play"></i> Executar Todos</button>
+      </div>
+      <p class="text-sm text-slate-400">Testa todos os endpoints da API sequencialmente. Cada teste executa um endpoint e valida a resposta.</p>
+      <div id="test-results" class="space-y-1"></div>
+    </div>
+  `
+
+  document.getElementById("btn-run-tests").addEventListener("click", runAllTests)
+  renderTestResults([])
+}
+
+function renderTestResults(results) {
+  const el = document.getElementById("test-results")
+  if (!el) return
+  if (results.length === 0) {
+    el.innerHTML = '<div class="text-center text-slate-600 py-12 text-sm">Clique em "Executar Todos" para iniciar os testes.</div>'
+    return
+  }
+  const passed = results.filter(r => r.pass).length
+  el.innerHTML = `
+    <div class="flex items-center gap-3 mb-4 p-3 rounded-lg ${passed === results.length ? 'bg-emerald-900/20 text-emerald-400' : 'bg-yellow-900/20 text-yellow-400'}">
+      <i class="fa-solid ${passed === results.length ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+      <span class="text-sm font-medium">${passed} / ${results.length} testes passaram</span>
+    </div>
+    ${results.map((r, i) => `
+      <div class="flex items-start gap-3 p-3 rounded-lg ${r.pass ? 'bg-emerald-900/10' : 'bg-red-900/10'} border-l-4 ${r.pass ? 'border-emerald-600' : 'border-red-600'} fade-in">
+        <span class="text-xs font-mono text-slate-500 w-6 shrink-0 mt-0.5">#${i + 1}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium">${escapeHtml(r.name)}</span>
+            <span class="badge ${r.pass ? 'bg-emerald-600/20 text-emerald-400' : 'bg-red-600/20 text-red-400'} text-xs">${r.pass ? '✓' : '✗'}</span>
+          </div>
+          <p class="text-xs ${r.pass ? 'text-slate-400' : 'text-red-400'} mt-0.5">${escapeHtml(r.msg)}</p>
+          ${r.data ? `<pre class="text-xs text-slate-500 mt-1 whitespace-pre-wrap overflow-x-auto max-h-20 opacity-70">${escapeHtml(JSON.stringify(r.data, null, 2).slice(0, 300))}${JSON.stringify(r.data).length > 300 ? '...' : ''}</pre>` : ''}
+        </div>
+        ${r.pass
+          ? '<i class="fa-solid fa-check-circle text-emerald-500 mt-1"></i>'
+          : '<i class="fa-solid fa-times-circle text-red-500 mt-1"></i>'}
+      </div>
+    `).join("")}
+  `
+}
+
+async function runAllTests() {
+  const btn = document.getElementById("btn-run-tests")
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Executando...'
+  const results = []
+  for (const test of TESTS) {
+    renderTestResults([...results, { name: test.name, pass: false, msg: "Executando...", data: null }])
+    try {
+      const r = await test.fn()
+      results.push({ name: test.name, ...r })
+    } catch (e) {
+      results.push({ name: test.name, pass: false, msg: `Exceção: ${e?.message || e}`, data: null })
+    }
+    renderTestResults([...results])
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Re-executar'
+}
+function sidebarOpen() { return !document.getElementById("sidebar").classList.contains("-translate-x-full") }
+
+function toggleSidebar(force) {
+  const sidebar = document.getElementById("sidebar")
+  const backdrop = document.getElementById("sidebar-backdrop")
+  const open = force !== undefined ? force : sidebarOpen()
+  sidebar.classList.toggle("-translate-x-full", !open)
+  backdrop.classList.toggle("hidden", !open)
+  document.body.classList.toggle("overflow-hidden", open && window.innerWidth < 768)
+}
+
+document.getElementById("btn-menu").addEventListener("click", () => toggleSidebar(true))
+document.getElementById("btn-menu-close").addEventListener("click", () => toggleSidebar(false))
+document.getElementById("sidebar-backdrop").addEventListener("click", () => toggleSidebar(false))
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (store.state.token) {
+    render("quests")
+  } else {
+    render("auth")
+  }
+})
+
+document.querySelectorAll(".sidebar-item").forEach(el => {
+  el.addEventListener("click", () => {
+    if (el.classList.contains("disabled")) return
+    const ctx = el.dataset.context
+    store.setState({ context: ctx })
+    render(ctx)
+    toggleSidebar(false)
+  })
+})
+
+document.getElementById("btn-logout").addEventListener("click", () => {
+  store.setState({ token: null, user: null })
+  localStorage.removeItem("bossraid_completed_quests")
+  completedQuests = new Set()
+  render("auth")
+})
+
+document.getElementById("btn-copy-token").addEventListener("click", async () => {
+  const token = store.state.token
+  if (!token) return showError("Nenhum token ativo")
+  try {
+    await navigator.clipboard.writeText(token)
+    showSuccess("Token copiado!")
+  } catch {
+    showError("Não foi possível copiar")
+  }
+})
+
+document.getElementById("log-toggle").addEventListener("click", () => {
+  const body = document.getElementById("log-body")
+  const chevron = document.getElementById("log-chevron")
+  body.classList.toggle("hidden")
+  chevron.classList.toggle("fa-chevron-up")
+  chevron.classList.toggle("fa-chevron-down")
+})
+
+document.getElementById("log-clear").addEventListener("click", (e) => {
+  e.stopPropagation()
+  logEntries.length = 0
+  renderLog()
+})
+
+document.getElementById("btn-base-url").addEventListener("click", () => {
+  document.getElementById("input-base-url").value = localStorage.getItem(LS_BASE) || BASE_URL
+  document.getElementById("modal-base-url").classList.remove("hidden")
+})
+document.getElementById("btn-base-url-cancel").addEventListener("click", () => {
+  document.getElementById("modal-base-url").classList.add("hidden")
+})
+document.getElementById("btn-base-url-save").addEventListener("click", () => {
+  const url = document.getElementById("input-base-url").value.trim()
+  if (url) {
+    saveBaseUrl(url)
+    document.getElementById("modal-base-url").classList.add("hidden")
+  }
+})
+document.getElementById("modal-base-url").addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) e.target.classList.add("hidden")
+})
+
+// ─── THEME ─────────────────────────────────────────────────────────────────
+const LS_THEME = "bossraid_theme"
+function applyTheme(light) {
+  document.documentElement.classList.toggle("light", light)
+  document.getElementById("theme-icon").className = light ? "fa-solid fa-sun" : "fa-solid fa-moon"
+  localStorage.setItem(LS_THEME, light ? "light" : "dark")
+}
+document.getElementById("btn-theme").addEventListener("click", () => {
+  applyTheme(!document.documentElement.classList.contains("light"))
+})
+if (localStorage.getItem(LS_THEME) === "light") applyTheme(true)
+
+// ─── EXPORT LOG ────────────────────────────────────────────────────────────
+document.getElementById("log-export").addEventListener("click", (e) => {
+  e.stopPropagation()
+  if (logEntries.length === 0) return showInfo("Nenhum registro para exportar")
+  const lines = logEntries.map(e => {
+    const ts = e.timestamp || new Date().toISOString()
+    const bodyStr = typeof e.body === "string" ? e.body : JSON.stringify(e.body, null, 2)
+    return `[${ts}] ${e.method} ${e.path} → ${e.status || "ERRO"}${e.duration ? ` (${e.duration}s)` : ""}\n${bodyStr ? "\n" + bodyStr : ""}`
+  }).join("\n\n" + "-".repeat(60) + "\n\n")
+  const blob = new Blob([lines], { type: "text/plain;charset=utf-8" })
+  const a = document.createElement("a")
+  a.href = URL.createObjectURL(blob)
+  a.download = `api-log-${new Date().toISOString().slice(0, 10)}.txt`
+  a.click()
+  URL.revokeObjectURL(a.href)
+})
+</script>
+</body>
+</html>

@@ -38,11 +38,23 @@ export class PrismaRaidRepository implements IRaidRepository {
     })
   }
 
-  async findAll(page: number, limit: number): Promise<{ data: Raid[]; total: number }> {
+  async findAll(page: number, limit: number): Promise<{ data: RaidWithRelations[]; total: number }> {
     const [data, total] = await Promise.all([
-      prisma.raid.findMany({ skip: (page - 1) * limit, take: limit }),
+      prisma.raid.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          boss: true,
+          participants: {
+            include: {
+              user: { select: { id: true, nickname: true, level: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.raid.count(),
     ])
-    return { data, total }
+    return { data, total } as { data: RaidWithRelations[]; total: number }
   }
 }

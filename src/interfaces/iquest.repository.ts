@@ -23,4 +23,5 @@ export interface IQuestRepository {
   findPlayerQuest(userId: string, questId: string): Promise<PlayerQuest | null>
   createPlayerQuest(userId: string, questId: string): Promise<PlayerQuest>
   updatePlayerQuest(id: string, completed: boolean): Promise<PlayerQuest>
+  findCompletedQuestIds(userId: string): Promise<string[]>
 }

@@ -1,6 +1,9 @@
 import Fastify from "fastify"
 import "dotenv/config"
 import { ZodError } from "zod"
+import fastifyStatic from "@fastify/static"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 import { registerPaginationPlugin } from "./plugins/pagination.js"
 import { registerAuthPlugin } from "./plugins/auth.js"
 import { registerAuthRoutes } from "./routes/auth.routes.js"
@@ -9,15 +12,17 @@ import { registerQuestRoutes } from "./routes/quest.routes.js"
 import { registerBossRoutes } from "./routes/boss.routes.js"
 import { registerRaidRoutes } from "./routes/raid.routes.js"
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
 const app = Fastify({ logger: true })
 
-app.get("/", async () => {
-  return {
-    name: "Boss Raid API",
-    version: "1.0.0",
-    status: "running",
-    docs: "https://github.com/Frankwra/Boss-Raid-API-de-Producao",
-  }
+app.register(fastifyStatic, {
+  root: path.join(__dirname, "..", "public"),
+  prefix: "/",
+})
+
+app.get("/", async (_req, reply) => {
+  return reply.sendFile("index.html")
 })
 
 app.setErrorHandler((error, _request, reply) => {

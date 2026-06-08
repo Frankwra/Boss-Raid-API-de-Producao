@@ -38,4 +38,9 @@ export class PrismaQuestRepository implements IQuestRepository {
   async updatePlayerQuest(id: string, completed: boolean): Promise<PlayerQuest> {
     return prisma.playerQuest.update({ where: { id }, data: { completed } })
   }
+
+  async findCompletedQuestIds(userId: string): Promise<string[]> {
+    const records = await prisma.playerQuest.findMany({ where: { userId, completed: true }, select: { questId: true } })
+    return records.map(r => r.questId)
+  }
 }

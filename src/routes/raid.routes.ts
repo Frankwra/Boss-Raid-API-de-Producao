@@ -4,6 +4,7 @@ import { RaidService } from "../services/raid.service.js"
 import { PrismaRaidRepository } from "../repositories/prisma.raid.repository.js"
 import { PrismaUserRepository } from "../repositories/prisma.user.repository.js"
 import { PrismaBossRepository } from "../repositories/prisma.boss.repository.js"
+import { parsePagination } from "../plugins/pagination.js"
 
 const raidService = new RaidService(
   new PrismaRaidRepository(),
@@ -12,6 +13,12 @@ const raidService = new RaidService(
 )
 
 export async function registerRaidRoutes(app: FastifyInstance): Promise<void> {
+  app.get("/raids", { preHandler: [app.authenticate] }, async (request, reply) => {
+    const { page, limit } = parsePagination(request)
+    const result = await raidService.list(page, limit)
+    return reply.send(result)
+  })
+
   app.post("/raids", { preHandler: [app.authenticate] }, async (request, reply) => {
     const { bossId } = createRaidSchema.parse(request.body)
     const result = await raidService.create(request.userId, bossId)

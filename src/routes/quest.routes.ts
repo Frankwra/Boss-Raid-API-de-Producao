@@ -45,4 +45,11 @@ export async function registerQuestRoutes(app: FastifyInstance): Promise<void> {
     const result = await questService.complete(id, userId)
     return reply.send(result)
   })
+
+  app.get("/quests/completed", { preHandler: [app.authenticate] }, async (request, reply) => {
+    const { userId } = request.query as { userId: string }
+    if (!userId) return reply.status(400).send({ message: "userId é obrigatório" })
+    const result = await questService.getCompletedQuestIds(userId)
+    return reply.send({ data: result })
+  })
 }

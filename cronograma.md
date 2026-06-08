@@ -10,6 +10,7 @@
 | Gestão de Bosses | Sprint 2 | ✅ Concluído |
 | Sistema de Raid | Sprint 3 | ✅ Concluído |
 | Testes & Finalização | Sprint 3 | ✅ Concluído |
+| Frontend Visual | Sprint 4 | ✅ Concluído |
 
 ---
 
@@ -87,6 +88,38 @@
 
 ---
 
+## Sprint 4 — Frontend Visual
+
+### 4.1 Frontend HTML/JS
+- [x] Servir `public/index.html` via `@fastify/static` (mesma origem, sem CORS)
+- [x] `apiFetch` wrapper com auto Bearer token e log
+- [x] `AppStore` class para estado reativo com subscribe
+- [x] Sidebar Dashboard com: Auth, Profile, Quests, Bosses, Raids, Testes
+- [x] Recursos ocultos até login (`#recursos-section` toggle)
+- [x] Card grid layout com hover effects e action buttons
+- [x] Modal overlay reutilizável com backdrop blur
+- [x] Paginação visual (prev/next + "Página X de Y")
+- [x] Busca/filtro client-side em quests e bosses
+- [x] Sidebar responsivo com hamburger menu
+- [x] Tema claro/escuro com persistência
+- [x] Exportar log como .txt
+- [x] Copiar token JWT (clipboard API)
+- [x] Toast notifications (success/error/info)
+- [x] Suite de testes visuais (19 testes, todos endpoints)
+
+### 4.2 Correções e Melhorias
+- [x] `completedQuests` persistido em localStorage
+- [x] Endpoint `GET /quests/completed?userId=X` para sincronizar status
+- [x] Retry login ao recarregar: fetch completed quests automaticamente
+- [x] Quest já completada: trata 409 como sucesso no frontend
+- [x] Quest concluída: botão "Editar" oculto no card
+- [x] Quest concluída: botão "Completar" oculto no modal de visualização
+- [x] `onDelete: Cascade` nas relações Prisma (PlayerQuest, Raid, RaidParticipant)
+- [x] `apiFetch` não envia `Content-Type` em requisições sem body
+- [x] Ordem de declaração corrigida: `completedQuests` antes de `store.subscribe`
+
+---
+
 ## Entidades do Domínio (Modelos Prisma)
 
 ```prisma
@@ -125,7 +158,7 @@ model PlayerQuest {
   createdAt DateTime @default(now())
 
   user  User  @relation(fields: [userId], references: [id])
-  quest Quest @relation(fields: [questId], references: [id])
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
 
   @@unique([userId, questId])
 }
@@ -151,18 +184,18 @@ model Raid {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  boss         Boss              @relation(fields: [bossId], references: [id])
+  boss         Boss              @relation(fields: [bossId], references: [id], onDelete: Cascade)
   participants RaidParticipant[]
 }
 
 model RaidParticipant {
-  id        String   @id @default(uuid())
-  raidId    String
-  userId    String
-  damage    Int      @default(0)
-  joinedAt  DateTime @default(now())
+  id       String   @id @default(uuid())
+  raidId   String
+  userId   String
+  damage   Int      @default(0)
+  joinedAt DateTime @default(now())
 
-  raid Raid @relation(fields: [raidId], references: [id])
+  raid Raid @relation(fields: [raidId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id])
 
   @@unique([raidId, userId])
@@ -185,6 +218,7 @@ model RaidParticipant {
 | PUT | `/quests/:id` | 200 | Atualizar quest (admin) | ✅ |
 | DELETE | `/quests/:id` | 204 | Remover quest (admin) | ✅ |
 | POST | `/quests/:id/complete` | 200 | Completar quest | ✅ |
+| GET | `/quests/completed` | 200 | IDs das quests completadas pelo usuário | ✅ |
 | GET | `/bosses` | 200 | Listar bosses (paginado) | ✅ |
 | POST | `/bosses` | 201 | Criar boss (admin) | ✅ |
 | GET | `/bosses/:id` | 200 | Detalhe do boss | ✅ |

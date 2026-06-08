@@ -16,5 +16,5 @@ export interface IRaidRepository {
   findParticipant(raidId: string, userId: string): Promise<RaidParticipant | null>
   addParticipant(raidId: string, userId: string): Promise<RaidParticipant>
   updateRaidStatus(id: string, status: string, currentHp?: number): Promise<Raid>
-  findAll(page: number, limit: number): Promise<{ data: Raid[]; total: number }>
+  findAll(page: number, limit: number): Promise<{ data: RaidWithRelations[]; total: number }>
 }

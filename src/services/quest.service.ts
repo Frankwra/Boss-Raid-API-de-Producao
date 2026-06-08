@@ -43,6 +43,10 @@ export class QuestService {
     await this.questRepository.delete(id)
   }
 
+  async getCompletedQuestIds(userId: string): Promise<string[]> {
+    return this.questRepository.findCompletedQuestIds(userId)
+  }
+
   async complete(questId: string, userId: string) {
     const quest = await this.questRepository.findById(questId)
     if (!quest) {

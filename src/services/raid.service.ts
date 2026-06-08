@@ -1,6 +1,7 @@
 import type { IRaidRepository } from "../interfaces/iraid.repository.js"
 import type { IUserRepository } from "../interfaces/iuser.repository.js"
 import type { IBossRepository } from "../interfaces/iboss.repository.js"
+import type { PaginatedResult } from "../plugins/pagination.js"
 
 export class RaidService {
   constructor(
@@ -108,6 +109,19 @@ export class RaidService {
     const raid = await this.raidRepository.findById(raidId)
     if (!raid) throw new RaidError("Raid não encontrada", 404)
     return raid
+  }
+
+  async list(page: number, limit: number): Promise<PaginatedResult<unknown>> {
+    const { data, total } = await this.raidRepository.findAll(page, limit)
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   }
 
   private async findBoss(bossId: string) {

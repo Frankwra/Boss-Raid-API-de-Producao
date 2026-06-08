@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export const createRaidSchema = z.object({
-  bossId: z.string().uuid("ID do boss inválido"),
+  bossId: z.string().min(1, "ID do boss é obrigatório"),
 })
 
 export const joinRaidSchema = z.object({
