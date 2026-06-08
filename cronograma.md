@@ -197,6 +197,16 @@ model RaidParticipant {
 
 ---
 
+## Sessão OpenCode
+
+Para retomar esta sessão no futuro, use o comando abaixo no PowerShell:
+
+```powershell
+opencode -s ses_15b9b52b6ffeHT0WkpQxH993NU
+```
+
+---
+
 ## Setup Inicial (Comandos)
 
 ```bash
