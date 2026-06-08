@@ -1,5 +1,6 @@
 import Fastify from "fastify"
 import "dotenv/config"
+import { ZodError } from "zod"
 import { registerPaginationPlugin } from "./plugins/pagination.js"
 import { registerAuthPlugin } from "./plugins/auth.js"
 import { registerAuthRoutes } from "./routes/auth.routes.js"
@@ -10,8 +11,27 @@ import { registerRaidRoutes } from "./routes/raid.routes.js"
 
 const app = Fastify({ logger: true })
 
+app.get("/", async () => {
+  return {
+    name: "Boss Raid API",
+    version: "1.0.0",
+    status: "running",
+    docs: "https://github.com/Frankwra/Boss-Raid-API-de-Producao",
+  }
+})
+
 app.setErrorHandler((error, _request, reply) => {
-  app.log.error(error)
+  if (error instanceof ZodError) {
+    return reply.status(400).send({
+      statusCode: 400,
+      error: "Bad Request",
+      message: "Dados inválidos",
+      details: error.errors.map((e) => ({
+        campo: e.path.join("."),
+        mensagem: e.message,
+      })),
+    })
+  }
 
   if (error.statusCode && error.statusCode < 500) {
     return reply.status(error.statusCode).send({
