@@ -6,8 +6,8 @@
 |-------|----------|--------|
 | Setup do Projeto | Sprint 1 | ✅ Concluído |
 | Autenticação & Usuários | Sprint 1 | ✅ Concluído |
-| Gestão de Quests | Sprint 2 | ⏳ Pendente |
-| Gestão de Bosses | Sprint 2 | ⏳ Pendente |
+| Gestão de Quests | Sprint 2 | ✅ Concluído |
+| Gestão de Bosses | Sprint 2 | ✅ Concluído |
 | Sistema de Raid | Sprint 3 | ⏳ Pendente |
 | Testes & Finalização | Sprint 3 | ⏳ Pendente |
 
@@ -43,22 +43,22 @@
 ## Sprint 2 — Entidades do Jogo
 
 ### 2.1 Gestão de Quests
-- [ ] `IQuestRepository` (interface)
-- [ ] `QuestService` — create, list (paginado), getById, update, delete, complete
-- [ ] `InMemoryQuestRepository` (fake para testes)
-- [ ] `PrismaQuestRepository`
-- [ ] Testes unitários do `QuestService` (TDD)
-- [ ] Schemas Zod de validação
-- [ ] `quest.routes.ts` — CRUD completo com paginação
+- [x] `IQuestRepository` (interface)
+- [x] `QuestService` — create, list (paginado), getById, update, delete, complete
+- [x] `InMemoryQuestRepository` (fake para testes)
+- [x] `PrismaQuestRepository`
+- [x] Testes unitários do `QuestService` (TDD — 10 testes)
+- [x] Schemas Zod de validação
+- [x] `quest.routes.ts` — CRUD completo com paginação
 
 ### 2.2 Gestão de Bosses
-- [ ] `IBossRepository` (interface)
-- [ ] `BossService` — create, list (paginado), getById, update, delete
-- [ ] `InMemoryBossRepository` (fake para testes)
-- [ ] `PrismaBossRepository`
-- [ ] Testes unitários do `BossService` (TDD)
-- [ ] Schemas Zod de validação
-- [ ] `boss.routes.ts` — CRUD completo com paginação
+- [x] `IBossRepository` (interface)
+- [x] `BossService` — create, list (paginado), getById, update, delete
+- [x] `InMemoryBossRepository` (fake para testes)
+- [x] `PrismaBossRepository`
+- [x] Testes unitários do `BossService` (TDD — 7 testes)
+- [x] Schemas Zod de validação
+- [x] `boss.routes.ts` — CRUD completo com paginação
 
 ---
 
@@ -179,17 +179,17 @@ model RaidParticipant {
 | POST | `/auth/login` | 200 | Login (retorna JWT) | ✅ |
 | GET | `/users/:id` | 200 | Perfil do usuário | ✅ |
 | PUT | `/users/:id` | 200 | Atualizar perfil | ✅ |
-| GET | `/quests` | 200 | Listar quests (paginado) |
-| POST | `/quests` | 201 | Criar quest (admin) |
-| GET | `/quests/:id` | 200 | Detalhe da quest |
-| PUT | `/quests/:id` | 200 | Atualizar quest (admin) |
-| DELETE | `/quests/:id` | 204 | Remover quest (admin) |
-| POST | `/quests/:id/complete` | 200 | Completar quest |
-| GET | `/bosses` | 200 | Listar bosses (paginado) |
-| POST | `/bosses` | 201 | Criar boss (admin) |
-| GET | `/bosses/:id` | 200 | Detalhe do boss |
-| PUT | `/bosses/:id` | 200 | Atualizar boss (admin) |
-| DELETE | `/bosses/:id` | 204 | Remover boss (admin) |
+| GET | `/quests` | 200 | Listar quests (paginado) | ✅ |
+| POST | `/quests` | 201 | Criar quest (admin) | ✅ |
+| GET | `/quests/:id` | 200 | Detalhe da quest | ✅ |
+| PUT | `/quests/:id` | 200 | Atualizar quest (admin) | ✅ |
+| DELETE | `/quests/:id` | 204 | Remover quest (admin) | ✅ |
+| POST | `/quests/:id/complete` | 200 | Completar quest | ✅ |
+| GET | `/bosses` | 200 | Listar bosses (paginado) | ✅ |
+| POST | `/bosses` | 201 | Criar boss (admin) | ✅ |
+| GET | `/bosses/:id` | 200 | Detalhe do boss | ✅ |
+| PUT | `/bosses/:id` | 200 | Atualizar boss (admin) | ✅ |
+| DELETE | `/bosses/:id` | 204 | Remover boss (admin) | ✅ |
 | POST | `/raids` | 201 | Iniciar raid contra um boss |
 | POST | `/raids/:id/join` | 200 | Entrar em uma raid |
 | POST | `/raids/:id/attack` | 200 | Atacar o boss na raid |
