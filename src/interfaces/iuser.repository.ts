@@ -9,6 +9,8 @@ export type UserCreateInput = {
 export type UserUpdateInput = {
   nickname?: string
   avatar?: string
+  xp?: number
+  level?: number
 }
 
 export interface IUserRepository {

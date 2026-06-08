@@ -4,6 +4,8 @@ import { registerPaginationPlugin } from "./plugins/pagination.js"
 import { registerAuthPlugin } from "./plugins/auth.js"
 import { registerAuthRoutes } from "./routes/auth.routes.js"
 import { registerUserRoutes } from "./routes/user.routes.js"
+import { registerQuestRoutes } from "./routes/quest.routes.js"
+import { registerBossRoutes } from "./routes/boss.routes.js"
 
 const app = Fastify({ logger: true })
 
@@ -29,6 +31,8 @@ await registerPaginationPlugin(app)
 await registerAuthPlugin(app)
 await registerAuthRoutes(app)
 await registerUserRoutes(app)
+await registerQuestRoutes(app)
+await registerBossRoutes(app)
 
 const start = async () => {
   try {
