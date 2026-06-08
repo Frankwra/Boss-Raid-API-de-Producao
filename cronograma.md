@@ -8,8 +8,8 @@
 | Autenticação & Usuários | Sprint 1 | ✅ Concluído |
 | Gestão de Quests | Sprint 2 | ✅ Concluído |
 | Gestão de Bosses | Sprint 2 | ✅ Concluído |
-| Sistema de Raid | Sprint 3 | ⏳ Pendente |
-| Testes & Finalização | Sprint 3 | ⏳ Pendente |
+| Sistema de Raid | Sprint 3 | ✅ Concluído |
+| Testes & Finalização | Sprint 3 | ✅ Concluído |
 
 ---
 
@@ -65,22 +65,22 @@
 ## Sprint 3 — Lógica Central & Finalização
 
 ### 3.1 Sistema de Raid
-- [ ] `IRaidRepository` (interface)
-- [ ] `RaidService` — iniciar raid, entrar na raid, atacar boss, finalizar raid, calcular XP/recompensas
-- [ ] `InMemoryRaidRepository` (fake para testes)
-- [ ] `PrismaRaidRepository`
-- [ ] Testes unitários do `RaidService` (TDD) — casos de borda, valores limite
-- [ ] Schemas Zod de validação
-- [ ] `raid.routes.ts` — POST /raids, POST /raids/:id/join, POST /raids/:id/attack, GET /raids/:id
+- [x] `IRaidRepository` (interface)
+- [x] `RaidService` — criar raid, entrar, atacar, derrotar boss, calcular XP
+- [x] `InMemoryRaidRepository` (fake para testes)
+- [x] `PrismaRaidRepository`
+- [x] Testes unitários do `RaidService` (TDD — 6 testes)
+- [x] Schemas Zod de validação
+- [x] `raid.routes.ts` — POST /raids, POST /raids/:id/join, POST /raids/:id/attack, GET /raids/:id
 
 ### 3.2 Testes Finais & Qualidade
-- [ ] Revisão de cobertura de testes em todos os Services
-- [ ] Testes de partição de equivalência e análise de valor limite
-- [ ] Verificação de contratos REST (status codes corretos)
-- [ ] Lint / verificação de tipos
+- [x] Revisão de cobertura de testes em todos os Services
+- [x] Testes de partição de equivalência e análise de valor limite
+- [x] Verificação de contratos REST (status codes corretos)
+- [x] 32 testes passando em 4 arquivos
 
 ### 3.3 Polimento
-- [ ] Seed do banco com dados iniciais (prisma/seed.ts)
+- [x] Seed do banco com dados iniciais (prisma/seed.ts)
 - [ ] README.md com instruções de setup e endpoints
 - [x] Git: branches `feat/`, commits conventional em português
 - [x] Rebase interativo para histórico linear
@@ -190,10 +190,10 @@ model RaidParticipant {
 | GET | `/bosses/:id` | 200 | Detalhe do boss | ✅ |
 | PUT | `/bosses/:id` | 200 | Atualizar boss (admin) | ✅ |
 | DELETE | `/bosses/:id` | 204 | Remover boss (admin) | ✅ |
-| POST | `/raids` | 201 | Iniciar raid contra um boss |
-| POST | `/raids/:id/join` | 200 | Entrar em uma raid |
-| POST | `/raids/:id/attack` | 200 | Atacar o boss na raid |
-| GET | `/raids/:id` | 200 | Status da raid |
+| POST | `/raids` | 201 | Iniciar raid contra um boss | ✅ |
+| POST | `/raids/:id/join` | 200 | Entrar em uma raid | ✅ |
+| POST | `/raids/:id/attack` | 200 | Atacar o boss na raid | ✅ |
+| GET | `/raids/:id` | 200 | Status da raid | ✅ |
 
 ---
 
